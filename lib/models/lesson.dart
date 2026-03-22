@@ -3,13 +3,23 @@ import '../models/quiz_problem.dart';
 class Lesson {
   final String title;
   final String description;
-  final String? imagePath; // optional for lesson thumbnail
+  final String? imagePath;
+  final List<LessonSection> sections;
   final List<QuizProblem> quizProblems;
 
   Lesson({
     required this.title,
     required this.description,
     this.imagePath,
+    required this.sections,
     required this.quizProblems,
   });
+}
+
+class LessonSection {
+  final String content;
+  final String? message;
+  final String? imagePath; // 👈 NEW
+
+  LessonSection({required this.content, this.message, this.imagePath});
 }

@@ -18,37 +18,37 @@ class OnboardingContent {
 }
 
 // 📝 EDIT TEXT AND IMAGES HERE:
-// Make sure these file names match the actual .png files in your assets/ folder.
+// Make sure these file names match the actual .png files in your assets/onboardingscreen/ folder.
 List<OnboardingContent> contents = [
   OnboardingContent(
     title: 'Explore Multiple Subjects',
     description:
         'Go beyond basic math. Master Linear Algebra, Integral Calculus, Physics, and Chemistry all in one place.',
-    imagePath: 'assets/subjects.png',
+    imagePath: 'assets/onboardingscreen/subjects.png',
   ),
   OnboardingContent(
     title: 'Challenge Your Skills',
     description:
         'Test your knowledge with curated quizzes tailored to your skill level, from Easy to Hard.',
-    imagePath: 'assets/quiz.png',
+    imagePath: 'assets/onboardingscreen/quiz.png',
   ),
   OnboardingContent(
     title: 'Earn Epic Badges',
     description:
         'Turn studying into a game. Unlock unique achievements like "Integration Specialist" as you conquer complex topics.',
-    imagePath: 'assets/badge.png',
+    imagePath: 'assets/onboardingscreen/badge.png',
   ),
   OnboardingContent(
     title: 'Track Your Growth',
     description:
         'Monitor your quiz scores, see your completion rates, and watch your mastery grow over time.',
-    imagePath: 'assets/progress.png',
+    imagePath: 'assets/onboardingscreen/progress.png',
   ),
   OnboardingContent(
     title: 'Study Your Way',
     description:
         'Create an account to save your milestones across devices, or dive right in as a guest to start learning immediately.',
-    imagePath: 'assets/start.png',
+    imagePath: 'assets/onboardingscreen/start.png',
   ),
 ];
 

@@ -21,6 +21,7 @@ flutter:
   uses-material-design: true
   assets:
     - assets/avatars/
+    - assets/onboardingscreen/
     - assets/
 
 flutter_native_splash:

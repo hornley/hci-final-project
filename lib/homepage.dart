@@ -3,9 +3,11 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:hci_final_project/login_wrapper.dart';
 import 'package:hci_final_project/theme/app_theme.dart';
 import 'screens/quiz_screen.dart';
-import '../data/sample_problems.dart';
-import '../data/sample_lessons.dart';
-import '../screens/lessons_list.dart';
+import '../data/lessons/linear_algebra.dart';
+import '../data/lessons/integral_calculus.dart';
+import '../data/lessons/physics.dart';
+import '../data/lessons/chemistry.dart';
+import 'screens/lessons_list_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -192,6 +194,7 @@ class _HomeScreenState extends State<HomeScreen> {
         child: BottomNavigationBar(
           currentIndex: _selectedIndex,
           onTap: _onItemTapped,
+          selectedItemColor: Colors.black,
 
           items: const [
             BottomNavigationBarItem(icon: Icon(Icons.book), label: 'Subjects'),
@@ -244,6 +247,48 @@ class _HomeScreenState extends State<HomeScreen> {
               MaterialPageRoute(
                 builder: (context) => LessonsScreen(
                   lessons: linearAlgebraLessons, // your list of Lesson objects
+                ),
+              ),
+            );
+          }),
+          const SizedBox(height: 32),
+          _buildButton(
+            context,
+            "Integral Calculus",
+            const Color(0xFF395886),
+            () {
+              // Navigate to the LessonsScreen
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => LessonsScreen(
+                    lessons:
+                        integralCalculusLessons, // your list of Lesson objects
+                  ),
+                ),
+              );
+            },
+          ),
+          const SizedBox(height: 32),
+          _buildButton(context, "Physics", const Color(0xFF395886), () {
+            // Navigate to the LessonsScreen
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => LessonsScreen(
+                  lessons: physicsLessons, // your list of Lesson objects
+                ),
+              ),
+            );
+          }),
+          const SizedBox(height: 32),
+          _buildButton(context, "Chemistry", const Color(0xFF395886), () {
+            // Navigate to the LessonsScreen
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => LessonsScreen(
+                  lessons: chemistryLessons, // your list of Lesson objects
                 ),
               ),
             );
@@ -367,17 +412,23 @@ class _HomeScreenState extends State<HomeScreen> {
           side: BorderSide(color: color, width: 2),
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
         ),
-        child: Text(
-          text,
-          style: GoogleFonts.poppins(
-            fontSize: 32,
-            shadows: [
-              Shadow(
-                offset: Offset(2, 2), // X, Y offset
-                blurRadius: 4, // softness
-                color: Colors.black.withValues(alpha: 0.3), // shadow color
-              ),
-            ],
+        child: Center(
+          // <- ensures text is centered
+          child: Text(
+            text,
+            textAlign: TextAlign.center, // <- extra safety
+            style: GoogleFonts.poppins(
+              fontSize: 26,
+              shadows: [
+                Shadow(
+                  offset: const Offset(2, 2),
+                  blurRadius: 4,
+                  color: Colors.black.withOpacity(
+                    0.3,
+                  ), // fixed: use withOpacity
+                ),
+              ],
+            ),
           ),
         ),
       ),
