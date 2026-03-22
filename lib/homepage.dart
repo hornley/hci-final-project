@@ -2,12 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:hci_final_project/login_wrapper.dart';
 import 'package:hci_final_project/theme/app_theme.dart';
-import 'screens/quiz_screen.dart';
 import '../data/lessons/linear_algebra.dart';
 import '../data/lessons/integral_calculus.dart';
 import '../data/lessons/physics.dart';
 import '../data/lessons/chemistry.dart';
 import 'screens/lessons_list_screen.dart';
+import 'local_storage.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -377,7 +377,8 @@ class _HomeScreenState extends State<HomeScreen> {
           Padding(
             padding: const EdgeInsets.only(bottom: 20),
             child: ElevatedButton(
-              onPressed: () {
+              onPressed: () async {
+                await LocalStorage.setLoggedIn(false);
                 Navigator.pushReplacement(
                   context,
                   MaterialPageRoute(builder: (context) => const LoginScreen()),

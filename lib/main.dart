@@ -2,22 +2,41 @@ import 'package:flutter/material.dart';
 import 'package:hci_final_project/login_wrapper.dart';
 import 'package:hci_final_project/theme/app_theme.dart';
 import 'package:hci_final_project/onboardingscreen.dart';
-import 'package:hci_final_project/tests/drag_and_drop.dart';
-import 'package:hci_final_project/screens/quiz_screen.dart';
+import 'homepage.dart';
+import 'local_storage.dart';
 
-void main() {
-  runApp(const MainApp());
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+
+  bool loggedIn = await LocalStorage.isLoggedIn();
+
+  runApp(const MainApp(startLoggedIn: false));
 }
 
 class MainApp extends StatelessWidget {
-  const MainApp({super.key});
+  final bool startLoggedIn;
+
+  const MainApp({super.key, required this.startLoggedIn});
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       theme: buildAppTheme(),
-      home: const LoginScreen(),
+      home: FutureBuilder<bool>(
+        future: LocalStorage.isLoggedIn(),
+        builder: (context, snapshot) {
+          if (!snapshot.hasData) {
+            // Show loading spinner while checking storage
+            return const Scaffold(
+              body: Center(child: CircularProgressIndicator()),
+            );
+          }
+
+          bool loggedIn = snapshot.data ?? false;
+          return loggedIn ? const HomeScreen() : const LoginScreen();
+        },
+      ),
       routes: {
         '/onboarding': (context) => const OnboardingScreen(),
         // '/login': (context) => const LoginWrapper(),
