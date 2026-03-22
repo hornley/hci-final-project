@@ -2,24 +2,16 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:hci_final_project/login_wrapper.dart';
 import 'package:hci_final_project/theme/app_theme.dart';
+import 'screens/quiz_screen.dart';
+import '../data/sample_problems.dart';
+import '../data/sample_lessons.dart';
+import '../screens/lessons_list.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
 
   @override
   State<HomeScreen> createState() => _HomeScreenState();
-}
-
-class SubjectContent {
-  String title;
-  String description;
-  String imagePath; // Expects a String for the file path
-
-  SubjectContent({
-    required this.title,
-    required this.description,
-    required this.imagePath,
-  });
 }
 
 class _HomeScreenState extends State<HomeScreen> {
@@ -221,7 +213,10 @@ class _HomeScreenState extends State<HomeScreen> {
         mainAxisSize: MainAxisSize.min,
         children: [
           _buildButton(context, "Subjects", const Color(0xFF395886), () {
-            print("Subjects pressed");
+            setState(() {
+              _showHomeContent = false; // hide home
+              _selectedIndex = 0; // show subjects tab
+            });
           }),
           const SizedBox(height: 32),
           _buildButton(context, "Achievements", const Color(0xFF395886), () {
@@ -242,12 +237,16 @@ class _HomeScreenState extends State<HomeScreen> {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          _subjectButton(context, "Algebra", const Color(0xFF395886), () {
-            print("Algebra pressed");
-          }),
-          const SizedBox(height: 16),
-          _subjectButton(context, "Geometry", const Color(0xFF395886), () {
-            print("Geometry pressed");
+          _buildButton(context, "Linear Algebra", const Color(0xFF395886), () {
+            // Navigate to the LessonsScreen
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => LessonsScreen(
+                  lessons: linearAlgebraLessons, // your list of Lesson objects
+                ),
+              ),
+            );
           }),
         ],
       ),
@@ -351,7 +350,6 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  // ✅ Reusable button
   Widget _buildButton(
     BuildContext context,
     String text,
@@ -359,8 +357,8 @@ class _HomeScreenState extends State<HomeScreen> {
     VoidCallback onPressed,
   ) {
     return SizedBox(
-      width: 220,
-      height: 60,
+      width: 300,
+      height: 95,
       child: OutlinedButton(
         onPressed: onPressed,
         style: OutlinedButton.styleFrom(
@@ -369,30 +367,19 @@ class _HomeScreenState extends State<HomeScreen> {
           side: BorderSide(color: color, width: 2),
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
         ),
-        child: Text(text, style: GoogleFonts.poppins(fontSize: 20)),
-      ),
-    );
-  }
-
-  // ✅ Reusable button
-  Widget _subjectButton(
-    BuildContext context,
-    String text,
-    Color color,
-    VoidCallback onPressed,
-  ) {
-    return SizedBox(
-      width: 220,
-      height: 60,
-      child: OutlinedButton(
-        onPressed: onPressed,
-        style: OutlinedButton.styleFrom(
-          backgroundColor: Colors.transparent,
-          foregroundColor: const Color(0xFF395886),
-          side: BorderSide(color: color, width: 2),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
+        child: Text(
+          text,
+          style: GoogleFonts.poppins(
+            fontSize: 32,
+            shadows: [
+              Shadow(
+                offset: Offset(2, 2), // X, Y offset
+                blurRadius: 4, // softness
+                color: Colors.black.withValues(alpha: 0.3), // shadow color
+              ),
+            ],
+          ),
         ),
-        child: Text(text, style: GoogleFonts.poppins(fontSize: 20)),
       ),
     );
   }
