@@ -160,6 +160,18 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+
+    // 🔥 Replay animation every time page opens
+    Future.delayed(Duration.zero, () {
+      setState(() {
+        animationKey++;
+      });
+    });
+  }
+
+  @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final sizes = theme.extension<AppSizes>();
@@ -332,34 +344,34 @@ class _HomeScreenState extends State<HomeScreen> {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-              ...progressData.entries.toList().asMap().entries.map((entry) {
-                int index = entry.key;
-                var data = entry.value;
+          ...progressData.entries.toList().asMap().entries.map((entry) {
+            int index = entry.key;
+            var data = entry.value;
 
-                return _animatedCard(
-                  index,
-                  data.key,
-                  data.value["quiz"],
-                  data.value["progress"],
+            return _animatedCard(
+              index,
+              data.key,
+              data.value["quiz"],
+              data.value["progress"],
+            );
+          }),
+
+          const SizedBox(height: 20),
+
+          ElevatedButton(
+            onPressed: () {
+              setState(() {
+                progressData.updateAll(
+                  (key, value) => {"quiz": "0/0", "progress": 0.0},
                 );
-              }),
-
-              const SizedBox(height: 20),
-
-              ElevatedButton(
-                onPressed: () {
-                  setState(() {
-                    progressData.updateAll(
-                      (key, value) => {"quiz": "0/0", "progress": 0.0},
-                    );
-                  });
-                },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF6F8FB3),
-                ),
-                child: const Text("Reset Progress"),
-              ),
-            ],
+              });
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFF6F8FB3),
+            ),
+            child: const Text("Reset Progress"),
+          ),
+        ],
       ),
     );
   }
@@ -549,7 +561,7 @@ class _HomeScreenState extends State<HomeScreen> {
       ),
     );
   }
-  
+
   // 🔥 CARD ANIMATION
   Widget _animatedCard(
     int index,

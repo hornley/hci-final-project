@@ -35,8 +35,8 @@ class MainApp extends StatelessWidget {
           }
 
           bool loggedIn = snapshot.data ?? false;
-          return ProgressPage();
-          //return loggedIn ? const HomeScreen() : const LoginScreen();
+          //return ProgressPage();
+          return loggedIn ? const HomeScreen() : const LoginScreen();
         },
       ),
       routes: {
