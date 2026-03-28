@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:hci_final_project/login_wrapper.dart';
-import 'package:hci_final_project/theme/app_theme.dart';
 import 'package:hci_final_project/widgets/bottom_nav_bar.dart';
 import '../data/lessons/linear_algebra.dart';
 import '../data/lessons/integral_calculus.dart';
@@ -40,10 +39,10 @@ class _HomeScreenState extends State<HomeScreen> {
 
   // Screens for each tab (you can replace later)
   List<Widget> get _pages => [
+    Builder(builder: (context) => _homeContent(context)),
+    const ProgressPage(),
     Builder(builder: (context) => _subjectsContent(context)),
-    const Center(child: Text("Progress Screen")),
     Builder(builder: (context) => _profileContent(context)),
-    Builder(builder: (context) => _settingsContent(context)),
   ];
 
   void _onItemTapped(int index) {
@@ -156,6 +155,7 @@ class _HomeScreenState extends State<HomeScreen> {
     final theme = Theme.of(context);
 
     return Scaffold(
+      extendBody: true,
       backgroundColor: theme.colorScheme.surface,
 
       appBar: AppBar(
@@ -171,40 +171,69 @@ class _HomeScreenState extends State<HomeScreen> {
       ),
 
       drawer: Drawer(
-        child: ListView(
-          padding: EdgeInsets.zero,
+        backgroundColor: Colors.white,
+        child: Column(
           children: [
             DrawerHeader(
-              decoration: BoxDecoration(color: Color(0xFF395886)),
-              child: Text(
-                'MathMaster',
-                style: TextStyle(color: Colors.white, fontSize: 24),
-              ),
+              decoration: BoxDecoration(color: Colors.transparent),
+              child: Image.asset("assets/logo.png"),
             ),
+
             ListTile(
-              leading: const Icon(Icons.home),
-              title: const Text('Home'),
+              contentPadding: const EdgeInsets.symmetric(horizontal: 16.0),
+              iconColor: Colors.black,
+              textColor: Colors.black,
+              leading: const Icon(Icons.home_outlined),
+              title: Text('Home', style: GoogleFonts.inter()),
               onTap: () => _navigateFromDrawer(showHome: true),
             ),
             ListTile(
-              leading: const Icon(Icons.book),
-              title: const Text('Subjects'),
+              contentPadding: const EdgeInsets.symmetric(horizontal: 16.0),
+              iconColor: Colors.black,
+              textColor: Colors.black,
+              leading: const Icon(Icons.library_books_outlined),
+              title: Text('Subjects', style: GoogleFonts.inter()),
               onTap: () => _navigateFromDrawer(bottomNavIndex: 0),
             ),
             ListTile(
-              leading: const Icon(Icons.bar_chart),
-              title: const Text('Progress'),
+              contentPadding: const EdgeInsets.symmetric(horizontal: 16.0),
+              iconColor: Colors.black,
+              textColor: Colors.black,
+              leading: const Icon(Icons.trending_up_outlined),
+              title: Text('Progress', style: GoogleFonts.inter()),
               onTap: () => _navigateFromDrawer(bottomNavIndex: 1),
             ),
             ListTile(
-              leading: const Icon(Icons.person),
-              title: const Text('Profile'),
+              contentPadding: const EdgeInsets.symmetric(horizontal: 16.0),
+              iconColor: Colors.black,
+              textColor: Colors.black,
+              leading: const Icon(Icons.account_circle_outlined),
+              title: Text('Profile', style: GoogleFonts.inter()),
               onTap: () => _navigateFromDrawer(bottomNavIndex: 2),
             ),
             ListTile(
-              leading: const Icon(Icons.settings),
-              title: const Text('Settings'),
+              contentPadding: const EdgeInsets.symmetric(horizontal: 16.0),
+              iconColor: Colors.black,
+              textColor: Colors.black,
+              leading: const Icon(Icons.settings_outlined),
+              title: Text('Settings', style: GoogleFonts.inter()),
               onTap: () => _navigateFromDrawer(showSettings: true),
+            ),
+            ListTile(
+              contentPadding: const EdgeInsets.symmetric(horizontal: 16.0),
+              iconColor: Colors.black,
+              textColor: Colors.black,
+              leading: const Icon(Icons.info_outlined),
+              title: Text('About', style: GoogleFonts.inter()),
+              onTap: () {},
+            ),
+            ListTile(
+              contentPadding: const EdgeInsets.symmetric(horizontal: 16.0),
+              iconColor: Colors.black,
+              textColor: Colors.black,
+              leading: const Icon(Icons.exit_to_app_outlined),
+              title: Text('Logout', style: GoogleFonts.inter()),
+              onTap: () => _navigateFromDrawer(bottomNavIndex: 2),
             ),
           ],
         ),
@@ -414,7 +443,7 @@ class _HomeScreenState extends State<HomeScreen> {
           // 🔹 Logout Button
           Padding(
             padding: const EdgeInsets.only(bottom: 20),
-            child: ElevatedButton(
+            child: ElevatedButton.icon(
               onPressed: () async {
                 await LocalStorage.setLoggedIn(false);
                 Navigator.pushReplacement(
@@ -429,7 +458,8 @@ class _HomeScreenState extends State<HomeScreen> {
                   borderRadius: BorderRadius.circular(6),
                 ),
               ),
-              child: Text(
+              icon: const Icon(Icons.exit_to_app_outlined, color: Colors.black),
+              label: Text(
                 "LOG OUT",
                 style: GoogleFonts.poppins(
                   color: Colors.black,

@@ -17,7 +17,7 @@ class MyBottomNavBar extends StatelessWidget {
       padding: const EdgeInsets.all(16.0),
       child: Container(
         decoration: BoxDecoration(
-          color: const Color(0xFFEFF2F9),
+          color: const Color(0xFF395886),
           borderRadius: BorderRadius.circular(40),
           boxShadow: [
             BoxShadow(
@@ -47,13 +47,13 @@ class MyBottomNavBar extends StatelessWidget {
                 onPressed: () => onTabChange(1),
               ),
               GButton(
-                icon: Icons.person_rounded,
-                text: 'Profile',
+                icon: Icons.menu_book_rounded,
+                text: 'Subjects',
                 onPressed: () => onTabChange(2),
               ),
               GButton(
-                icon: Icons.menu_book_rounded,
-                text: 'Subjects',
+                icon: Icons.person_rounded,
+                text: 'Profile',
                 onPressed: () => onTabChange(3),
               ),
             ],
