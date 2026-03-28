@@ -1,4 +1,3 @@
-import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter/material.dart';
 import 'package:hci_final_project/homepage.dart';
 import 'local_storage.dart';
@@ -24,12 +23,11 @@ class _LoginScreenState extends State<LoginScreen> {
 
   // Load saved username/password
   void _loadSavedCredentials() async {
-    final prefs = await SharedPreferences.getInstance();
     String? savedUsername = await LocalStorage.getLoginUsername();
     String? savedPassword = await LocalStorage.getLoginPassword();
 
-    if (savedUsername != null) _usernameController.text = savedUsername;
-    if (savedPassword != null) _passwordController.text = savedPassword;
+    _usernameController.text = savedUsername;
+    _passwordController.text = savedPassword;
 
     setState(() {
       _loading = false;

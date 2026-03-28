@@ -492,9 +492,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 Shadow(
                   offset: const Offset(2, 2),
                   blurRadius: 4,
-                  color: Colors.black.withOpacity(
-                    0.3,
-                  ), // fixed: use withOpacity
+                  color: Colors.black.withValues(alpha: 0.3),
                 ),
               ],
             ),
