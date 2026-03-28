@@ -2,12 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:hci_final_project/login_wrapper.dart';
 import 'package:hci_final_project/theme/app_theme.dart';
+import 'package:hci_final_project/widgets/bottom_nav_bar.dart';
 import '../data/lessons/linear_algebra.dart';
 import '../data/lessons/integral_calculus.dart';
 import '../data/lessons/physics.dart';
 import '../data/lessons/chemistry.dart';
 import 'screens/lessons_list_screen.dart';
 import 'local_storage.dart';
+import 'progress_page.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -20,8 +22,6 @@ class _HomeScreenState extends State<HomeScreen> {
   int _selectedIndex = 0;
   bool _showHomeContent = true;
   bool _showSettingsContent = false;
-
-  bool get _isInMainTabs => !_showHomeContent && !_showSettingsContent;
 
   int _selectedAvatar = 0;
 
@@ -154,12 +154,21 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final sizes = theme.extension<AppSizes>();
 
     return Scaffold(
       backgroundColor: theme.colorScheme.surface,
 
-      appBar: AppBar(title: const Text("MathMaster")),
+      appBar: AppBar(
+        centerTitle: true,
+        title: Text(
+          "MathMaster",
+          style: GoogleFonts.poppins(
+            fontSize: 24,
+            fontWeight: FontWeight.bold,
+            color: Colors.black,
+          ),
+        ),
+      ),
 
       drawer: Drawer(
         child: ListView(
@@ -207,24 +216,9 @@ class _HomeScreenState extends State<HomeScreen> {
           ? _settingsContent(context)
           : _pages[_selectedIndex],
 
-      bottomNavigationBar: SizedBox(
-        height: sizes?.bottomNavHeight ?? 72,
-        child: BottomNavigationBar(
-          currentIndex: _selectedIndex,
-          onTap: _onItemTapped,
-
-          selectedItemColor: _isInMainTabs ? Colors.black : Colors.white,
-          unselectedItemColor: Colors.white,
-
-          items: const [
-            BottomNavigationBarItem(icon: Icon(Icons.book), label: 'Subjects'),
-            BottomNavigationBarItem(
-              icon: Icon(Icons.bar_chart),
-              label: 'Progress',
-            ),
-            BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Profile'),
-          ],
-        ),
+      bottomNavigationBar: MyBottomNavBar(
+        selectedIndex: _selectedIndex,
+        onTabChange: _onItemTapped,
       ),
     );
   }
@@ -247,7 +241,10 @@ class _HomeScreenState extends State<HomeScreen> {
           }),
           const SizedBox(height: 32),
           _buildButton(context, "Progress", const Color(0xFF395886), () {
-            print("Progress pressed");
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => const ProgressPage()),
+            );
           }),
         ],
       ),

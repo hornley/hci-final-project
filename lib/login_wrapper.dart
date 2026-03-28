@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:hci_final_project/homepage.dart';
+import 'package:hci_final_project/screens/createaccountscreen.dart';
 import 'local_storage.dart';
 
 class LoginScreen extends StatefulWidget {
@@ -171,7 +172,12 @@ class _LoginScreenState extends State<LoginScreen> {
                     ),
                     TextButton(
                       onPressed: () {
-                        print("Create account");
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => const CreateAccountScreen(),
+                          ),
+                        );
                       },
                       child: const Text(
                         "Create an account",
