@@ -6,6 +6,7 @@ import 'local_storage.dart';
 import 'package:hci_final_project/home_pages/profile_page.dart';
 import 'package:hci_final_project/home_pages/subjects_page.dart';
 import 'package:hci_final_project/home_pages/progress_page.dart';
+import 'package:hci_final_project/home_pages/settings_page.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -61,7 +62,10 @@ class _HomeScreenState extends State<HomeScreen> {
       selectedAvatar: _selectedAvatar,
       onChangeAvatar: _showAvatarPicker,
       onOpenSettings: () {
-        _navigateFromDrawer(showSettings: true); // or push settings page
+        setState(() {
+          _showHomeContent = false;
+          _showSettingsContent = true;
+        });
       },
       onLogout: () async {
         await LocalStorage.setLoggedIn(false);
@@ -285,7 +289,15 @@ class _HomeScreenState extends State<HomeScreen> {
       body: _showHomeContent
           ? _homeContent(context)
           : _showSettingsContent
-          ? _settingsContent(context)
+          ? SettingsPage(
+              onGoToSubjects: () {
+                setState(() {
+                  _showHomeContent = false;
+                  _showSettingsContent = false;
+                  _selectedIndex = 2; // Subjects index
+                });
+              },
+            )
           : _pages[_selectedIndex],
 
       bottomNavigationBar: MyBottomNavBar(
@@ -316,23 +328,6 @@ class _HomeScreenState extends State<HomeScreen> {
             setState(() {
               _showHomeContent = false; // hide home
               _selectedIndex = 1; // show subjects tab
-            });
-          }),
-        ],
-      ),
-    );
-  }
-
-  // Settings Page
-  Widget _settingsContent(BuildContext context) {
-    return Center(
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          _buildButton(context, "Subjects", const Color(0xFF395886), () {
-            setState(() {
-              _showHomeContent = false;
-              _selectedIndex = 0;
             });
           }),
         ],
