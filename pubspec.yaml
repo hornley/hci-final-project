@@ -37,6 +37,7 @@ flutter:
     - assets/icons/chemistry.png
     - assets/
     - assets/splash.png
+    - assets/avatars/
 flutter_native_splash:
   color: "#d5deef"
   image: assets/splash.png

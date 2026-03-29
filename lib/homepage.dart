@@ -2,13 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:hci_final_project/login_wrapper.dart';
 import 'package:hci_final_project/widgets/bottom_nav_bar.dart';
-import '../data/lessons/linear_algebra.dart';
-import '../data/lessons/integral_calculus.dart';
-import '../data/lessons/physics.dart';
-import '../data/lessons/chemistry.dart';
-import 'screens/lessons_list_screen.dart';
 import 'local_storage.dart';
-import 'progress_page.dart';
+import 'package:hci_final_project/home_pages/profile_page.dart';
+import 'package:hci_final_project/home_pages/subjects_page.dart';
+import 'package:hci_final_project/home_pages/progress_page.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -48,14 +45,37 @@ class _HomeScreenState extends State<HomeScreen> {
   // Screens for each tab (you can replace later)
   List<Widget> get _pages => [
     Builder(builder: (context) => _homeContent(context)),
-    const ProgressPage(),
-    Builder(builder: (context) => _subjectsContent(context)),
-    Builder(builder: (context) => _progressContent(context)),
-    Builder(builder: (context) => _profileContent(context)),
+    ProgressPage(
+      progressData: progressData,
+      onReset: () {
+        setState(() {
+          progressData.updateAll(
+            (key, value) => {"quiz": "0/0", "progress": 0.0},
+          );
+        });
+      },
+    ),
+    const SubjectsPage(),
+    ProfilePage(
+      avatars: avatars,
+      selectedAvatar: _selectedAvatar,
+      onChangeAvatar: _showAvatarPicker,
+      onOpenSettings: () {
+        _navigateFromDrawer(showSettings: true); // or push settings page
+      },
+      onLogout: () async {
+        await LocalStorage.setLoggedIn(false);
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (_) => const LoginScreen()),
+        );
+      },
+    ),
   ];
 
   void _onItemTapped(int index) {
     setState(() {
+      print("Bottom Nav: $index");
       _selectedIndex = index;
       _showHomeContent = false;
       _showSettingsContent = false;
@@ -284,7 +304,7 @@ class _HomeScreenState extends State<HomeScreen> {
           _buildButton(context, "Subjects", const Color(0xFF395886), () {
             setState(() {
               _showHomeContent = false; // hide home
-              _selectedIndex = 0; // show subjects tab
+              _selectedIndex = 2; // show subjects tab
             });
           }),
           const SizedBox(height: 32),
@@ -293,342 +313,11 @@ class _HomeScreenState extends State<HomeScreen> {
           }),
           const SizedBox(height: 32),
           _buildButton(context, "Progress", const Color(0xFF395886), () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(builder: (context) => const ProgressPage()),
-            );
+            setState(() {
+              _showHomeContent = false; // hide home
+              _selectedIndex = 1; // show subjects tab
+            });
           }),
-        ],
-      ),
-    );
-  }
-
-  // 🔥 SUBJECTS PAGE (REPLACE YOUR OLD ONE)
-  Widget _subjectsContent(BuildContext context) {
-    return SingleChildScrollView(
-      padding: const EdgeInsets.all(20),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // 🔹 HEADER
-          Text(
-            "What would you like to learn today?",
-            style: GoogleFonts.poppins(
-              fontSize: 16,
-              fontWeight: FontWeight.w600,
-            ),
-          ),
-
-          const SizedBox(height: 20),
-
-          // 🔹 SUBJECT CARDS
-          _subjectCard(
-            context,
-            title: "Linear Algebra",
-            subtitle: "Matrices, vectors, spaces",
-            color: const Color(0xFF6C8CD5),
-            iconPath: "assets/icons/linear.png",
-            onTap: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) =>
-                      LessonsScreen(lessons: linearAlgebraLessons),
-                ),
-              );
-            },
-          ),
-
-          _subjectCard(
-            context,
-            title: "Integral Calculus",
-            subtitle: "Integration, areas",
-            color: const Color(0xFF8E7DBE),
-            iconPath: "assets/icons/calculus.png",
-            onTap: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) =>
-                      LessonsScreen(lessons: integralCalculusLessons),
-                ),
-              );
-            },
-          ),
-
-          _subjectCard(
-            context,
-            title: "Physics",
-            subtitle: "Motion, energy, forces",
-            color: const Color(0xFF5DA399),
-            iconPath: "assets/icons/physics.png",
-            onTap: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => LessonsScreen(lessons: physicsLessons),
-                ),
-              );
-            },
-          ),
-
-          _subjectCard(
-            context,
-            title: "Chemistry",
-            subtitle: "Atoms, reactions",
-            color: const Color(0xFFE07A5F),
-            iconPath: "assets/icons/chemistry.png",
-            onTap: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) =>
-                      LessonsScreen(lessons: chemistryLessons),
-                ),
-              );
-            },
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _subjectCard(
-    BuildContext context, {
-    required String title,
-    required String subtitle,
-    required Color color,
-    required String iconPath,
-    required VoidCallback onTap,
-  }) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 16),
-      child: GestureDetector(
-        onTap: onTap,
-        child: Container(
-          padding: const EdgeInsets.all(16),
-          decoration: BoxDecoration(
-            color: Colors.white.withOpacity(0.85), // keeps your bg visible
-            borderRadius: BorderRadius.circular(16),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withOpacity(0.05),
-                blurRadius: 10,
-                offset: const Offset(0, 4),
-              ),
-            ],
-          ),
-          child: Row(
-            children: [
-              // 🔹 ICON
-              Container(
-                width: 50,
-                height: 50,
-                decoration: BoxDecoration(
-                  color: color.withOpacity(0.15),
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: Image.asset(iconPath),
-                ),
-              ),
-
-              const SizedBox(width: 16),
-
-              // 🔹 TEXT
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      title,
-                      style: const TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      subtitle,
-                      style: TextStyle(color: Colors.grey[600], fontSize: 13),
-                    ),
-                  ],
-                ),
-              ),
-
-              // 🔹 ARROW
-              const Icon(Icons.arrow_forward_ios_rounded, size: 18),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  // Progress Page
-  Widget _progressContent(BuildContext context) {
-    return Center(
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          ...progressData.entries.toList().asMap().entries.map((entry) {
-            int index = entry.key;
-            var data = entry.value;
-
-            return _animatedCard(
-              index,
-              data.key,
-              data.value["quiz"],
-              data.value["progress"],
-            );
-          }),
-
-          const SizedBox(height: 20),
-
-          ElevatedButton(
-            onPressed: () {
-              setState(() {
-                progressData.updateAll(
-                  (key, value) => {"quiz": "0/0", "progress": 0.0},
-                );
-              });
-            },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFF6F8FB3),
-            ),
-            child: const Text("Reset Progress"),
-          ),
-        ],
-      ),
-    );
-  }
-
-  // Profile Page
-  Widget _profileContent(BuildContext context) {
-    return Center(
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          // 🔹 Profile Header
-          Container(
-            width: double.infinity,
-            padding: const EdgeInsets.all(16),
-            child: Row(
-              children: [
-                CircleAvatar(
-                  radius: 40,
-                  backgroundImage: AssetImage(avatars[_selectedAvatar]),
-                ),
-                const SizedBox(width: 16),
-
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Text(
-                      "Yamato",
-                      style: TextStyle(fontSize: 20, color: Colors.white),
-                    ),
-
-                    const SizedBox(height: 8),
-
-                    ElevatedButton(
-                      onPressed: _showAvatarPicker,
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Color(0xFF8AAEE0),
-                        foregroundColor: Colors.black,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(6),
-                          // side: BorderSide(color: Colors.black, width: 2),
-                        ),
-                      ),
-                      child: const Text("Change Avatar"),
-                    ),
-                  ],
-                ),
-              ],
-            ),
-          ),
-
-          const Divider(color: Colors.black),
-
-          // 🔹 Stats Section
-          Container(
-            width: double.infinity,
-            padding: const EdgeInsets.all(16),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  "• Quizzes Completed: 12",
-                  style: GoogleFonts.poppins(fontSize: 18),
-                ),
-                SizedBox(height: 8),
-                Text(
-                  "• Badges Earned: 5",
-                  style: GoogleFonts.poppins(fontSize: 18),
-                ),
-              ],
-            ),
-          ),
-
-          const Divider(color: Colors.black),
-
-          // 🔹 Settings Button
-          Padding(
-            padding: const EdgeInsets.symmetric(vertical: 16),
-            child: ElevatedButton(
-              onPressed: () {},
-              style: ElevatedButton.styleFrom(
-                minimumSize: const Size(200, 50),
-                backgroundColor: Color(0xFF8AAEE0),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(6),
-                  // side: BorderSide(color: Colors.black, width: 2),
-                ),
-              ),
-              child: Text(
-                "Settings",
-                style: GoogleFonts.poppins(
-                  color: Colors.black,
-                  fontSize: 16,
-                  fontWeight: FontWeight.w500,
-                ),
-              ),
-            ),
-          ),
-
-          const Spacer(),
-
-          // 🔹 Logout Button
-          Padding(
-            padding: const EdgeInsets.only(bottom: 20),
-            child: ElevatedButton.icon(
-              onPressed: () async {
-                await LocalStorage.setLoggedIn(false);
-                Navigator.pushReplacement(
-                  context,
-                  MaterialPageRoute(builder: (context) => const LoginScreen()),
-                );
-              },
-              style: ElevatedButton.styleFrom(
-                minimumSize: const Size(220, 50),
-                backgroundColor: Color(0xFF8AAEE0),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(6),
-                ),
-              ),
-              icon: const Icon(Icons.exit_to_app_outlined, color: Colors.black),
-              label: Text(
-                "LOG OUT",
-                style: GoogleFonts.poppins(
-                  color: Colors.black,
-                  fontSize: 16,
-                  fontWeight: FontWeight.w500,
-                ),
-              ),
-            ),
-          ),
         ],
       ),
     );
@@ -685,122 +374,6 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
           ),
         ),
-      ),
-    );
-  }
-
-  // 🔥 CARD ANIMATION
-  Widget _animatedCard(
-    int index,
-    String title,
-    String quizzes,
-    double progress,
-  ) {
-    return TweenAnimationBuilder<double>(
-      key: ValueKey(animationKey + index),
-      tween: Tween(begin: 0, end: 1),
-      duration: Duration(milliseconds: 500 + (index * 200)),
-      curve: Curves.easeOut,
-      builder: (context, value, child) {
-        return Transform.translate(
-          offset: Offset(0, 30 * (1 - value)),
-          child: Opacity(opacity: value, child: child),
-        );
-      },
-      child: _buildCard(title, quizzes, progress),
-    );
-  }
-
-  // 🔥 CARD UI
-  Widget _buildCard(String title, String quizzes, double progress) {
-    return Container(
-      width: double.infinity,
-      margin: const EdgeInsets.only(bottom: 20),
-      padding: const EdgeInsets.all(15),
-      decoration: BoxDecoration(
-        color: const Color(0xFFD3D9E2),
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.15),
-            blurRadius: 10,
-            offset: const Offset(0, 6),
-          ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: [
-          Text(
-            title,
-            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
-          ),
-
-          const SizedBox(height: 8),
-
-          Text("Quizzes Taken: $quizzes"),
-
-          const SizedBox(height: 12),
-
-          // 🔥 ANIMATED PROGRESS BAR
-          TweenAnimationBuilder<double>(
-            key: ValueKey(animationKey),
-            tween: Tween(begin: 0, end: progress),
-            duration: const Duration(milliseconds: 1200),
-            curve: Curves.easeOutCubic,
-            builder: (context, value, _) {
-              Color barColor;
-
-              if (value < 0.3) {
-                barColor = Colors.redAccent;
-              } else if (value < 0.7) {
-                barColor = Colors.orange;
-              } else {
-                barColor = Colors.green;
-              }
-
-              return Column(
-                children: [
-                  ClipRRect(
-                    borderRadius: BorderRadius.circular(12),
-                    child: LinearProgressIndicator(
-                      value: value,
-                      minHeight: 10,
-                      backgroundColor: Colors.grey[300],
-                      color: barColor,
-                    ),
-                  ),
-                  const SizedBox(height: 6),
-                  Text(
-                    "${(value * 100).toStringAsFixed(0)}%",
-                    style: const TextStyle(fontWeight: FontWeight.bold),
-                  ),
-                ],
-              );
-            },
-          ),
-
-          const SizedBox(height: 12),
-
-          // 🏆 BADGE (SHOW AT 40%)
-          if (progress >= 0.4)
-            TweenAnimationBuilder<double>(
-              tween: Tween(begin: 0, end: 1),
-              duration: const Duration(milliseconds: 800),
-              builder: (context, value, _) {
-                return Transform.scale(
-                  scale: value,
-                  child: Opacity(
-                    opacity: value,
-                    child: Image.asset(
-                      "assets/onboardingscreen/badge.png",
-                      height: 40,
-                    ),
-                  ),
-                );
-              },
-            ),
-        ],
       ),
     );
   }

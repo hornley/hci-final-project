@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:hci_final_project/login_wrapper.dart';
+import 'package:hci_final_project/theme/app_theme.dart';
 import 'package:hci_final_project/onboardingscreen.dart';
-import 'package:hci_final_project/progress_page.dart';
 import 'homepage.dart';
 import 'local_storage.dart';
 
@@ -13,7 +14,9 @@ void main() async {
 }
 
 class MainApp extends StatelessWidget {
-  const MainApp({super.key});
+  final bool startLoggedIn;
+
+  const MainApp({super.key, required this.startLoggedIn});
 
   @override
   Widget build(BuildContext context) {
@@ -31,7 +34,6 @@ class MainApp extends StatelessWidget {
           }
 
           bool loggedIn = snapshot.data ?? false;
-          //return ProgressPage();
           return loggedIn ? const HomeScreen() : const LoginScreen();
         },
       ),
