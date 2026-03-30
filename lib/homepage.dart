@@ -195,7 +195,7 @@ class _HomeScreenState extends State<HomeScreen> {
               textColor: Colors.black,
               leading: const Icon(Icons.library_books_outlined),
               title: Text('Subjects', style: GoogleFonts.inter()),
-              onTap: () => _navigateFromDrawer(bottomNavIndex: 0),
+              onTap: () => _navigateFromDrawer(bottomNavIndex: 2),
             ),
             ListTile(
               contentPadding: const EdgeInsets.symmetric(horizontal: 16.0),
@@ -211,7 +211,7 @@ class _HomeScreenState extends State<HomeScreen> {
               textColor: Colors.black,
               leading: const Icon(Icons.account_circle_outlined),
               title: Text('Profile', style: GoogleFonts.inter()),
-              onTap: () => _navigateFromDrawer(bottomNavIndex: 2),
+              onTap: () => _navigateFromDrawer(bottomNavIndex: 3),
             ),
             ListTile(
               contentPadding: const EdgeInsets.symmetric(horizontal: 16.0),
@@ -235,7 +235,13 @@ class _HomeScreenState extends State<HomeScreen> {
               textColor: Colors.black,
               leading: const Icon(Icons.exit_to_app_outlined),
               title: Text('Logout', style: GoogleFonts.inter()),
-              onTap: () => _navigateFromDrawer(bottomNavIndex: 2),
+              onTap: () async {
+                await LocalStorage.setLoggedIn(false);
+                Navigator.pushReplacement(
+                  context,
+                  MaterialPageRoute(builder: (context) => const LoginScreen()),
+                );
+              },
             ),
           ],
         ),
@@ -282,23 +288,22 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  // 🔥 SUBJECTS PAGE (REPLACE YOUR OLD ONE)
+  //  SUBJECTS PAGE
   Widget _subjectsContent(BuildContext context) {
     return SingleChildScrollView(
-      padding: const EdgeInsets.all(20),
+      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           // 🔹 HEADER
+          const SizedBox(height: 20),
+
           Text(
             "What would you like to learn today?",
-            style: GoogleFonts.poppins(
-              fontSize: 16,
-              fontWeight: FontWeight.w600,
-            ),
+            style: GoogleFonts.inter(fontSize: 16, fontWeight: FontWeight.w500),
           ),
 
-          const SizedBox(height: 20),
+          const SizedBox(height: 30),
 
           // 🔹 SUBJECT CARDS
           _subjectCard(
@@ -385,10 +390,11 @@ class _HomeScreenState extends State<HomeScreen> {
       child: GestureDetector(
         onTap: onTap,
         child: Container(
-          padding: const EdgeInsets.all(16),
+          height: 100, // 🔥 ADDED (increase height)
+          padding: const EdgeInsets.symmetric(horizontal: 16),
           decoration: BoxDecoration(
-            color: Colors.white.withOpacity(0.85), // keeps your bg visible
-            borderRadius: BorderRadius.circular(16),
+            color: Colors.white.withOpacity(0.85),
+            borderRadius: BorderRadius.circular(20), // 🔥 smoother UI
             boxShadow: [
               BoxShadow(
                 color: Colors.black.withOpacity(0.05),
@@ -398,17 +404,18 @@ class _HomeScreenState extends State<HomeScreen> {
             ],
           ),
           child: Row(
+            crossAxisAlignment: CrossAxisAlignment.center, // 🔥 CENTER
             children: [
               // 🔹 ICON
               Container(
-                width: 50,
-                height: 50,
+                width: 56, // 🔥 slightly bigger
+                height: 56,
                 decoration: BoxDecoration(
                   color: color.withOpacity(0.15),
-                  borderRadius: BorderRadius.circular(12),
+                  borderRadius: BorderRadius.circular(14),
                 ),
                 child: Padding(
-                  padding: const EdgeInsets.all(8.0),
+                  padding: const EdgeInsets.all(10),
                   child: Image.asset(iconPath),
                 ),
               ),
@@ -418,16 +425,17 @@ class _HomeScreenState extends State<HomeScreen> {
               // 🔹 TEXT
               Expanded(
                 child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center, // 🔥 CENTER TEXT
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
                       title,
                       style: const TextStyle(
-                        fontSize: 16,
+                        fontSize: 17, // 🔥 slightly bigger
                         fontWeight: FontWeight.bold,
                       ),
                     ),
-                    const SizedBox(height: 4),
+                    const SizedBox(height: 6),
                     Text(
                       subtitle,
                       style: TextStyle(color: Colors.grey[600], fontSize: 13),
