@@ -30,6 +30,8 @@ class QuestCompletionResult {
 }
 
 class QuestManager {
+  static const _guestUserKey = '__guest__';
+
   static List<String> get _allLessonTitles {
     return [
       ...linearAlgebraLessons,
@@ -51,7 +53,16 @@ class QuestManager {
 
   static Future<String?> _currentUserKey() async {
     final username = await LocalStorage.getCurrentUsername();
-    return username;
+    if (username != null) {
+      return username;
+    }
+
+    final loggedIn = await LocalStorage.isLoggedIn();
+    if (loggedIn) {
+      return _guestUserKey;
+    }
+
+    return null;
   }
 
   static Future<Map<String, bool>> _loadCompletionMap(DateTime now) async {
@@ -170,8 +181,8 @@ class QuestManager {
     required String lessonTitle,
     DateTime? now,
   }) async {
-    final username = await _currentUserKey();
-    if (username == null) {
+    final userKey = await _currentUserKey();
+    if (userKey == null) {
       return const QuestCompletionResult(
         completedQuests: [],
         totalExpReward: 0,

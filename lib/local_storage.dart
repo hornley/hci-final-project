@@ -6,6 +6,9 @@ class LocalStorage {
   static const _keyAccounts = 'accounts';
   static const _keyHasSeenOnboarding = 'hasSeenOnboarding';
   static const _keyCurrentUsername = 'currentUsername';
+  static const _keyGuestExp = 'guestExp';
+  static const _keyGuestCoins = 'guestCoins';
+  static const _keyGuestLevel = 'guestLevel';
 
   // Save login state
   static Future<void> setLoggedIn(bool value) async {
@@ -160,6 +163,13 @@ class LocalStorage {
     return null;
   }
 
+  static Future<bool> _isGuestSession() async {
+    final loggedIn = await isLoggedIn();
+    if (!loggedIn) return false;
+    final username = await getCurrentUsername();
+    return username == null;
+  }
+
   static int _calculateLevelFromExp(int exp) {
     return (exp ~/ 100) + 1;
   }
@@ -191,15 +201,35 @@ class LocalStorage {
 
   static Future<int> getExp() async {
     final account = await getCurrentAccount();
-    return (account?['exp'] as int?) ?? 0;
+    if (account != null) {
+      return (account['exp'] as int?) ?? 0;
+    }
+
+    if (await _isGuestSession()) {
+      final prefs = await SharedPreferences.getInstance();
+      return prefs.getInt(_keyGuestExp) ?? 0;
+    }
+
+    return 0;
   }
 
   static Future<void> setExp(int value) async {
     final accounts = await _getAccountsCopy();
     final index = await _findCurrentAccountIndex(accounts);
-    if (index == null) return;
-
     final normalizedExp = value < 0 ? 0 : value;
+
+    if (index == null) {
+      if (await _isGuestSession()) {
+        final prefs = await SharedPreferences.getInstance();
+        await prefs.setInt(_keyGuestExp, normalizedExp);
+        await prefs.setInt(
+          _keyGuestLevel,
+          _calculateLevelFromExp(normalizedExp),
+        );
+      }
+      return;
+    }
+
     accounts[index]['exp'] = normalizedExp;
     accounts[index]['level'] = _calculateLevelFromExp(normalizedExp);
     await _saveAccounts(accounts);
@@ -214,15 +244,32 @@ class LocalStorage {
 
   static Future<int> getCoins() async {
     final account = await getCurrentAccount();
-    return (account?['coins'] as int?) ?? 0;
+    if (account != null) {
+      return (account['coins'] as int?) ?? 0;
+    }
+
+    if (await _isGuestSession()) {
+      final prefs = await SharedPreferences.getInstance();
+      return prefs.getInt(_keyGuestCoins) ?? 0;
+    }
+
+    return 0;
   }
 
   static Future<void> setCoins(int value) async {
     final accounts = await _getAccountsCopy();
     final index = await _findCurrentAccountIndex(accounts);
-    if (index == null) return;
+    final normalizedCoins = value < 0 ? 0 : value;
 
-    accounts[index]['coins'] = value < 0 ? 0 : value;
+    if (index == null) {
+      if (await _isGuestSession()) {
+        final prefs = await SharedPreferences.getInstance();
+        await prefs.setInt(_keyGuestCoins, normalizedCoins);
+      }
+      return;
+    }
+
+    accounts[index]['coins'] = normalizedCoins;
     await _saveAccounts(accounts);
   }
 
@@ -235,8 +282,16 @@ class LocalStorage {
 
   static Future<int> getLevel() async {
     final account = await getCurrentAccount();
-    final storedLevel = account?['level'] as int?;
-    if (storedLevel != null) return storedLevel;
+    if (account != null) {
+      final storedLevel = account['level'] as int?;
+      if (storedLevel != null) return storedLevel;
+    }
+
+    if (await _isGuestSession()) {
+      final prefs = await SharedPreferences.getInstance();
+      final storedGuestLevel = prefs.getInt(_keyGuestLevel);
+      if (storedGuestLevel != null) return storedGuestLevel;
+    }
 
     final exp = await getExp();
     return _calculateLevelFromExp(exp);
@@ -245,9 +300,23 @@ class LocalStorage {
   static Future<void> setLevel(int value) async {
     final accounts = await _getAccountsCopy();
     final index = await _findCurrentAccountIndex(accounts);
-    if (index == null) return;
 
     final normalizedLevel = value < 1 ? 1 : value;
+
+    if (index == null) {
+      if (await _isGuestSession()) {
+        final prefs = await SharedPreferences.getInstance();
+        await prefs.setInt(_keyGuestLevel, normalizedLevel);
+
+        final minExpForLevel = (normalizedLevel - 1) * 100;
+        final currentExp = prefs.getInt(_keyGuestExp) ?? 0;
+        if (currentExp < minExpForLevel) {
+          await prefs.setInt(_keyGuestExp, minExpForLevel);
+        }
+      }
+      return;
+    }
+
     accounts[index]['level'] = normalizedLevel;
     final minExpForLevel = (normalizedLevel - 1) * 100;
     final currentExp = (accounts[index]['exp'] as int?) ?? 0;

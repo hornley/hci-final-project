@@ -15,7 +15,7 @@ class SubjectsPage extends StatelessWidget {
     return Container(
       color: Theme.of(context).scaffoldBackgroundColor,
       child: SingleChildScrollView(
-        padding: const EdgeInsets.fromLTRB(16, 180, 16, 100),
+        padding: const EdgeInsets.fromLTRB(16, 30, 16, 100),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -185,8 +185,9 @@ class SubjectsPage extends StatelessWidget {
   }) {
     final useDarkText = color.computeLuminance() > 0.7;
     final textColor = useDarkText ? const Color(0xFF1F232B) : Colors.white;
-    final mutedTextColor =
-        useDarkText ? const Color(0xFF3A3F4B) : Colors.white.withOpacity(0.75);
+    final mutedTextColor = useDarkText
+        ? const Color(0xFF3A3F4B)
+        : Colors.white.withOpacity(0.75);
 
     return GestureDetector(
       onTap: onTap,
@@ -249,10 +250,7 @@ class SubjectsPage extends StatelessWidget {
               const SizedBox(height: 6),
               Text(
                 subtitle,
-                style: GoogleFonts.poppins(
-                  fontSize: 12,
-                  color: mutedTextColor,
-                ),
+                style: GoogleFonts.poppins(fontSize: 12, color: mutedTextColor),
               ),
               const SizedBox(height: 14),
               Row(

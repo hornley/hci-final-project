@@ -136,7 +136,7 @@ class _QuestsPageState extends State<QuestsPage> {
                 ),
               ),
               child: Text(
-                'Guest mode reminder: quest completion and rewards are only saved for logged-in accounts.',
+                'Guest mode: quest completion and rewards are saved locally on this device.',
                 style: GoogleFonts.poppins(
                   fontSize: 12,
                   color: Theme.of(context).colorScheme.onSurface,
@@ -212,8 +212,9 @@ class _QuestsPageState extends State<QuestsPage> {
             value: progress.clamp(0.0, 1.0),
             minHeight: 10,
             borderRadius: BorderRadius.circular(999),
-            backgroundColor:
-                Theme.of(context).colorScheme.onSurface.withOpacity(0.12),
+            backgroundColor: Theme.of(
+              context,
+            ).colorScheme.onSurface.withOpacity(0.12),
             color: const Color(0xFF395886),
           ),
           const SizedBox(height: 8),

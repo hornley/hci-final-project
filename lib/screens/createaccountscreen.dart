@@ -15,10 +15,6 @@ class CreateAccountScreen extends StatefulWidget {
 
 class _CreateAccountScreenState extends State<CreateAccountScreen> {
   final _formKey = GlobalKey<FormState>();
-  final _firstNameController = TextEditingController();
-  final _lastNameController = TextEditingController();
-  final _middleInitialController = TextEditingController();
-  final _ageController = TextEditingController();
   final _phoneController = TextEditingController();
   final _emailController = TextEditingController();
   final _usernameController = TextEditingController();
@@ -30,10 +26,6 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
 
   @override
   void dispose() {
-    _firstNameController.dispose();
-    _lastNameController.dispose();
-    _middleInitialController.dispose();
-    _ageController.dispose();
     _phoneController.dispose();
     _usernameController.dispose();
     _emailController.dispose();
@@ -45,14 +37,15 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
   void _createAccount() async {
     if (_formKey.currentState!.validate()) {
       try {
+        final username = _usernameController.text.trim();
         await LocalStorage.createAccount(
-          firstName: _firstNameController.text.trim(),
-          lastName: _lastNameController.text.trim(),
-          middleInitial: _middleInitialController.text.trim(),
-          age: int.parse(_ageController.text.trim()),
+          firstName: username,
+          lastName: '',
+          middleInitial: '',
+          age: 0,
           phone: _phoneController.text.trim(),
           email: _emailController.text.trim(),
-          username: _usernameController.text.trim(),
+          username: username,
           password: _passwordController.text.trim(),
         );
 
@@ -86,9 +79,7 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
         width: double.infinity,
         height: double.infinity,
         padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 40),
-        decoration: BoxDecoration(
-          color: Theme.of(context).colorScheme.surface,
-        ),
+        decoration: BoxDecoration(color: Theme.of(context).colorScheme.surface),
         child: Center(
           child: ScrollConfiguration(
             behavior: ScrollConfiguration.of(
@@ -135,24 +126,26 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
                       textAlign: TextAlign.center,
                       style: GoogleFonts.inter(
                         fontSize: 12,
-                        color: Theme.of(context)
-                            .colorScheme
-                            .onSurface
-                            .withOpacity(0.6),
+                        color: Theme.of(
+                          context,
+                        ).colorScheme.onSurface.withOpacity(0.6),
                       ),
                     ),
                     const SizedBox(height: 20),
 
                     _fieldWrapper(
                       TextFormField(
-                        controller: _firstNameController,
+                        controller: _usernameController,
                         decoration: _inputDecoration(
-                          hint: 'Name',
+                          hint: 'Username',
                           icon: Icons.person_outline_rounded,
                         ),
                         validator: (value) {
                           if (value == null || value.isEmpty) {
-                            return 'Name is required';
+                            return 'Username is required';
+                          }
+                          if (value.contains(' ')) {
+                            return 'Username cannot contain spaces';
                           }
                           return null;
                         },
@@ -172,7 +165,9 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
                           if (value == null || value.isEmpty) {
                             return 'Email is required';
                           }
-                          if (!RegExp(r'^[a-zA-Z0-9._%-]+$').hasMatch(value)) {
+                          if (!RegExp(
+                            r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$',
+                          ).hasMatch(value)) {
                             return 'Invalid email format';
                           }
                           return null;
@@ -292,10 +287,9 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
                           style: GoogleFonts.inter(
                             fontSize: 12,
                             fontWeight: FontWeight.w500,
-                            color: Theme.of(context)
-                                .colorScheme
-                                .onSurface
-                                .withOpacity(0.6),
+                            color: Theme.of(
+                              context,
+                            ).colorScheme.onSurface.withOpacity(0.6),
                           ),
                         ),
                         const SizedBox(width: 10),
@@ -322,10 +316,9 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
                           "Already have an account? ",
                           style: GoogleFonts.inter(
                             fontSize: 12,
-                            color: Theme.of(context)
-                                .colorScheme
-                                .onSurface
-                                .withOpacity(0.6),
+                            color: Theme.of(
+                              context,
+                            ).colorScheme.onSurface.withOpacity(0.6),
                           ),
                         ),
                         TextButton(

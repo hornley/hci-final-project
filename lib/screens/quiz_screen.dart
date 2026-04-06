@@ -69,8 +69,7 @@ class _QuizScreenState extends State<QuizScreen> {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final primary = Theme.of(context).colorScheme.primary;
     final buttonBackground = isDark ? primary : (themeColor ?? primary);
-    final buttonForeground =
-        isDark ? Colors.white : Theme.of(context).colorScheme.onPrimary;
+    final buttonForeground = isDark ? Colors.white : Colors.black;
 
     Widget questionWidget;
 
@@ -230,10 +229,8 @@ class _QuizResultsScreenState extends State<QuizResultsScreen> {
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final primary = Theme.of(context).colorScheme.primary;
-    final buttonBackground =
-        isDark ? primary : (widget.themeColor ?? primary);
-    final buttonForeground =
-        isDark ? Colors.white : Theme.of(context).colorScheme.onPrimary;
+    final buttonBackground = isDark ? primary : (widget.themeColor ?? primary);
+    final buttonForeground = isDark ? Colors.white : Colors.black;
 
     return Scaffold(
       appBar: AppBar(
@@ -248,10 +245,9 @@ class _QuizResultsScreenState extends State<QuizResultsScreen> {
               margin: const EdgeInsets.fromLTRB(16, 16, 16, 0),
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
-                color: Theme.of(context)
-                    .colorScheme
-                    .surfaceVariant
-                    .withOpacity(0.4),
+                color: Theme.of(
+                  context,
+                ).colorScheme.surfaceVariant.withOpacity(0.4),
                 borderRadius: BorderRadius.circular(10),
               ),
               child: Text(
@@ -293,28 +289,25 @@ class _QuizResultsScreenState extends State<QuizResultsScreen> {
                         Text(
                           "Your answer: $userAnswer",
                           style: TextStyle(
-                            color: Theme.of(context)
-                                .colorScheme
-                                .onSurface
-                                .withOpacity(0.8),
+                            color: Theme.of(
+                              context,
+                            ).colorScheme.onSurface.withOpacity(0.8),
                           ),
                         ),
                         Text(
                           "Correct answer: ${problem.answer}",
                           style: TextStyle(
-                            color: Theme.of(context)
-                                .colorScheme
-                                .onSurface
-                                .withOpacity(0.8),
+                            color: Theme.of(
+                              context,
+                            ).colorScheme.onSurface.withOpacity(0.8),
                           ),
                         ),
                         Text(
                           "Result: ${correct ? '✅ Correct' : '❌ Incorrect'}",
                           style: TextStyle(
-                            color: Theme.of(context)
-                                .colorScheme
-                                .onSurface
-                                .withOpacity(0.9),
+                            color: Theme.of(
+                              context,
+                            ).colorScheme.onSurface.withOpacity(0.9),
                           ),
                         ),
                       ],
