@@ -52,7 +52,9 @@ class AboutPage extends StatelessWidget {
                   "Version 1.0.0",
                   style: GoogleFonts.poppins(
                     fontSize: 14,
-                    color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
+                    color: Theme.of(
+                      context,
+                    ).colorScheme.onSurface.withOpacity(0.6),
                   ),
                 ),
               ],
@@ -83,7 +85,8 @@ class AboutPage extends StatelessWidget {
             context,
             icon: Icons.trending_up_rounded,
             title: "Progress Tracking",
-            description: "Monitor your learning journey with detailed analytics",
+            description:
+                "Monitor your learning journey with detailed analytics",
           ),
           const SizedBox(height: 12),
           _buildFeatureItem(
@@ -113,7 +116,7 @@ class AboutPage extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  "Zyrene Education Team",
+                  "Education Team",
                   style: GoogleFonts.poppins(
                     fontSize: 16,
                     fontWeight: FontWeight.w600,
@@ -125,7 +128,9 @@ class AboutPage extends StatelessWidget {
                   "Creating innovative solutions for interactive learning.",
                   style: GoogleFonts.inter(
                     fontSize: 13,
-                    color: Theme.of(context).colorScheme.onSurface.withOpacity(0.7),
+                    color: Theme.of(
+                      context,
+                    ).colorScheme.onSurface.withOpacity(0.7),
                   ),
                 ),
               ],
@@ -162,7 +167,9 @@ class AboutPage extends StatelessWidget {
                   "© 2024 Zyrene Education",
                   style: GoogleFonts.inter(
                     fontSize: 12,
-                    color: Theme.of(context).colorScheme.onSurface.withOpacity(0.5),
+                    color: Theme.of(
+                      context,
+                    ).colorScheme.onSurface.withOpacity(0.5),
                   ),
                 ),
                 const SizedBox(height: 4),
@@ -170,7 +177,9 @@ class AboutPage extends StatelessWidget {
                   "All rights reserved",
                   style: GoogleFonts.inter(
                     fontSize: 12,
-                    color: Theme.of(context).colorScheme.onSurface.withOpacity(0.5),
+                    color: Theme.of(
+                      context,
+                    ).colorScheme.onSurface.withOpacity(0.5),
                   ),
                 ),
               ],
@@ -239,7 +248,9 @@ class AboutPage extends StatelessWidget {
                   description,
                   style: GoogleFonts.inter(
                     fontSize: 12,
-                    color: Theme.of(context).colorScheme.onSurface.withOpacity(0.7),
+                    color: Theme.of(
+                      context,
+                    ).colorScheme.onSurface.withOpacity(0.7),
                   ),
                 ),
               ],
@@ -264,11 +275,7 @@ class AboutPage extends StatelessWidget {
       ),
       child: Row(
         children: [
-          Icon(
-            icon,
-            color: Theme.of(context).colorScheme.primary,
-            size: 24,
-          ),
+          Icon(icon, color: Theme.of(context).colorScheme.primary, size: 24),
           const SizedBox(width: 14),
           Expanded(
             child: Column(
@@ -287,7 +294,9 @@ class AboutPage extends StatelessWidget {
                   subtitle,
                   style: GoogleFonts.inter(
                     fontSize: 12,
-                    color: Theme.of(context).colorScheme.onSurface.withOpacity(0.7),
+                    color: Theme.of(
+                      context,
+                    ).colorScheme.onSurface.withOpacity(0.7),
                   ),
                 ),
               ],

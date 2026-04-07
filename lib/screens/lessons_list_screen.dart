@@ -37,12 +37,15 @@ class _LessonDetailScreenState extends State<LessonDetailScreen> {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final primary = Theme.of(context).colorScheme.primary;
     final buttonBackground = isDark ? primary : (themeColor ?? primary);
-    final buttonForeground =
-      isDark ? Colors.white : Theme.of(context).colorScheme.onPrimary;
-    final outlineForeground =
-      isDark ? Colors.white : Theme.of(context).colorScheme.onSurface;
-    final outlineSideColor =
-      isDark ? Colors.white : (themeColor ?? outlineForeground);
+    final buttonForeground = isDark
+        ? Colors.white
+        : Theme.of(context).colorScheme.onPrimary;
+    final outlineForeground = isDark
+        ? Colors.white
+        : Theme.of(context).colorScheme.onSurface;
+    final outlineSideColor = isDark
+        ? Colors.white
+        : (themeColor ?? outlineForeground);
 
     return Scaffold(
       appBar: AppBar(
@@ -159,10 +162,8 @@ class _LessonDetailScreenState extends State<LessonDetailScreen> {
                         Navigator.pop(context);
                       },
                       style: OutlinedButton.styleFrom(
-                          foregroundColor: outlineForeground,
-                        side: BorderSide(
-                            color: outlineSideColor,
-                        ),
+                        foregroundColor: outlineForeground,
+                        side: BorderSide(color: outlineSideColor),
                       ),
                       child: const Text("Back to Lessons"),
                     ),
@@ -221,7 +222,9 @@ class LessonsScreen extends StatelessWidget {
                 lesson.description,
                 style: GoogleFonts.poppins(
                   fontSize: 12,
-                  color: Theme.of(context).colorScheme.onSurface.withOpacity(0.7),
+                  color: Theme.of(
+                    context,
+                  ).colorScheme.onSurface.withOpacity(0.7),
                 ),
               ),
               trailing: Icon(

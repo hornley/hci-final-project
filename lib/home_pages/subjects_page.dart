@@ -241,11 +241,7 @@ class SubjectsPage extends StatelessWidget {
                       ),
                     ),
                   ),
-                  Image.asset(
-                    icon,
-                    width: 28,
-                    height: 28,
-                  ),
+                  Image.asset(icon, width: 28, height: 28),
                 ],
               ),
               const SizedBox(height: 16),

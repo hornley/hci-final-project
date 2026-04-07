@@ -173,9 +173,7 @@ ThemeData buildDarkTheme() {
       ),
     ),
     iconButtonTheme: IconButtonThemeData(
-      style: IconButton.styleFrom(
-        foregroundColor: darkButtonForeground,
-      ),
+      style: IconButton.styleFrom(foregroundColor: darkButtonForeground),
     ),
     extensions: const [appSizes],
   );

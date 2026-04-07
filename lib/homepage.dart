@@ -361,17 +361,17 @@ class _HomeScreenState extends State<HomeScreen> {
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
 
       appBar: AppBar(
-          centerTitle: true,
-          backgroundColor: Theme.of(context).colorScheme.primary,
-          title: Text(
-            "MathMaster",
-            style: GoogleFonts.poppins(
-              fontSize: 24,
-              fontWeight: FontWeight.bold,
-              color: Colors.white,
-            ),
+        centerTitle: true,
+        backgroundColor: Theme.of(context).colorScheme.primary,
+        title: Text(
+          "MathMaster",
+          style: GoogleFonts.poppins(
+            fontSize: 24,
+            fontWeight: FontWeight.bold,
+            color: Colors.white,
           ),
-          actions: const [ThemeToggleButton()],
+        ),
+        actions: const [ThemeToggleButton()],
       ),
 
       drawer: Drawer(
@@ -504,10 +504,9 @@ class _HomeScreenState extends State<HomeScreen> {
                 'Here is your learning snapshot.',
                 style: GoogleFonts.poppins(
                   fontSize: 15,
-                  color: Theme.of(context)
-                      .colorScheme
-                      .onSurface
-                      .withOpacity(0.6),
+                  color: Theme.of(
+                    context,
+                  ).colorScheme.onSurface.withOpacity(0.6),
                 ),
               ),
               const SizedBox(height: 18),
@@ -661,10 +660,7 @@ class _HomeScreenState extends State<HomeScreen> {
               '${recentQuiz.subjectTitle} • ${recentQuiz.correctAnswers}/${recentQuiz.totalQuestions} • ${recentQuiz.percentage}%',
               style: GoogleFonts.poppins(
                 fontSize: 13,
-                color: Theme.of(context)
-                    .colorScheme
-                    .onSurface
-                    .withOpacity(0.7),
+                color: Theme.of(context).colorScheme.onSurface.withOpacity(0.7),
               ),
             ),
           ],
