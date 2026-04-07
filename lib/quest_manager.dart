@@ -31,6 +31,7 @@ class QuestCompletionResult {
 
 class QuestManager {
   static const _guestUserKey = '__guest__';
+  static const _adminUserKey = 'admin';
 
   static List<String> get _allLessonTitles {
     return [
@@ -177,10 +178,28 @@ class QuestManager {
         .toList();
   }
 
+  static Future<void> resetGuestQuestState() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.remove('$_questDatePrefix-$_guestUserKey');
+    await prefs.remove('$_questCompletionPrefix-$_guestUserKey');
+  }
+
   static Future<QuestCompletionResult> completeQuestsForLesson({
     required String lessonTitle,
     DateTime? now,
   }) async {
+    final username = await LocalStorage.getCurrentUsername();
+    if (username == _adminUserKey) {
+      return QuestCompletionResult(
+        completedQuests: const [],
+        totalExpReward: 0,
+        totalCoinReward: 0,
+        currentExp: await LocalStorage.getExp(),
+        currentCoins: await LocalStorage.getCoins(),
+        currentLevel: await LocalStorage.getLevel(),
+      );
+    }
+
     final userKey = await _currentUserKey();
     if (userKey == null) {
       return const QuestCompletionResult(

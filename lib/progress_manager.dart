@@ -80,6 +80,7 @@ class ProgressSnapshot {
 
 class ProgressManager {
   static const _keyPrefix = 'progressData';
+  static const _guestUserKey = 'guest';
 
   static final Map<String, List<Lesson>> _subjectLessons = {
     'Linear Algebra': linearAlgebraLessons,
@@ -259,5 +260,10 @@ class ProgressManager {
       'quizStats': <String, dynamic>{},
       'recentQuizzes': <dynamic>[],
     });
+  }
+
+  static Future<void> resetGuestProgress() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.remove('$_keyPrefix-$_guestUserKey');
   }
 }

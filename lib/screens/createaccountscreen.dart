@@ -5,6 +5,8 @@ import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:hci_final_project/homepage.dart';
 import 'package:hci_final_project/local_storage.dart';
+import 'package:hci_final_project/progress_manager.dart';
+import 'package:hci_final_project/quest_manager.dart';
 
 class CreateAccountScreen extends StatefulWidget {
   const CreateAccountScreen({super.key});
@@ -52,6 +54,11 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Account created successfully!')),
         );
+
+        if (!mounted) {
+          return;
+        }
+        Navigator.pop(context);
       } catch (e) {
         ScaffoldMessenger.of(
           context,
@@ -63,6 +70,11 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
   void _guestLogin() async {
     await LocalStorage.setLoggedIn(true);
     await LocalStorage.clearCurrentUsername();
+    await QuestManager.resetGuestQuestState();
+    await ProgressManager.resetGuestProgress();
+    await LocalStorage.setExp(0);
+    await LocalStorage.setCoins(0);
+    await LocalStorage.setLevel(1);
     if (!mounted) {
       return;
     }

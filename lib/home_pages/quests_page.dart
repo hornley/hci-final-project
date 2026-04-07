@@ -22,6 +22,7 @@ class _QuestsPageState extends State<QuestsPage> {
   int _exp = 0;
   int _coins = 0;
   bool _isGuest = false;
+  bool _isAdmin = false;
   bool _loading = true;
   Duration _timeUntilReset = Duration.zero;
   Timer? _countdownTimer;
@@ -73,6 +74,7 @@ class _QuestsPageState extends State<QuestsPage> {
       _exp = exp;
       _coins = coins;
       _isGuest = username == null;
+      _isAdmin = username == 'admin';
       _loading = false;
     });
   }
@@ -144,8 +146,35 @@ class _QuestsPageState extends State<QuestsPage> {
               ),
             ),
           ],
+          if (_isAdmin) ...[
+            const SizedBox(height: 12),
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: Theme.of(context).colorScheme.surfaceVariant,
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(
+                  color: Theme.of(context).colorScheme.primary,
+                ),
+              ),
+              child: Text(
+                'Admin mode reminder: quest rewards and EXP/coin gains are disabled for this account.',
+                style: GoogleFonts.poppins(
+                  fontSize: 12,
+                  color: Theme.of(context).colorScheme.onSurface,
+                ),
+              ),
+            ),
+          ],
           const SizedBox(height: 18),
-          _buildStatsCard(progressCurrent.toDouble(), progressMax.toDouble()),
+          Opacity(
+            opacity: _isAdmin ? 0.45 : 1,
+            child: _buildStatsCard(
+              progressCurrent.toDouble(),
+              progressMax.toDouble(),
+            ),
+          ),
           const SizedBox(height: 10),
           Container(
             width: double.infinity,
@@ -165,14 +194,19 @@ class _QuestsPageState extends State<QuestsPage> {
           ),
           const SizedBox(height: 16),
           Text(
-            'Completed today: $_completedCount/${_quests.length}',
+            _isAdmin
+                ? 'Quest progression disabled for admin account'
+                : 'Completed today: $_completedCount/${_quests.length}',
             style: GoogleFonts.poppins(
               fontWeight: FontWeight.w600,
               color: Theme.of(context).colorScheme.onSurface,
             ),
           ),
           const SizedBox(height: 10),
-          ..._quests.map(_buildQuestTile),
+          Opacity(
+            opacity: _isAdmin ? 0.45 : 1,
+            child: Column(children: _quests.map(_buildQuestTile).toList()),
+          ),
         ],
       ),
     );
@@ -253,15 +287,25 @@ class _QuestsPageState extends State<QuestsPage> {
         ? 'Finish any lesson quiz'
         : 'Finish "${quest.lessonTitle}" quiz';
 
+    final subtitle = _isAdmin
+        ? '$questSubtitle\nDisabled for admin account'
+        : '$questSubtitle\nReward: +${quest.expReward} EXP, +${quest.coinReward} coins';
+
     return Card(
       margin: const EdgeInsets.only(bottom: 10),
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
       child: ListTile(
         leading: Icon(
-          quest.isCompleted ? Icons.check_circle : Icons.radio_button_unchecked,
-          color: quest.isCompleted
-              ? Colors.green
-              : Theme.of(context).colorScheme.onSurface.withOpacity(0.5),
+          _isAdmin
+              ? Icons.block
+              : (quest.isCompleted
+                    ? Icons.check_circle
+                    : Icons.radio_button_unchecked),
+          color: _isAdmin
+              ? Theme.of(context).colorScheme.onSurface.withOpacity(0.45)
+              : (quest.isCompleted
+                    ? Colors.green
+                    : Theme.of(context).colorScheme.onSurface.withOpacity(0.5)),
         ),
         title: Text(
           quest.title,
@@ -271,7 +315,7 @@ class _QuestsPageState extends State<QuestsPage> {
           ),
         ),
         subtitle: Text(
-          '$questSubtitle\nReward: +${quest.expReward} EXP, +${quest.coinReward} coins',
+          subtitle,
           style: GoogleFonts.poppins(
             fontSize: 12,
             color: Theme.of(context).colorScheme.onSurface.withOpacity(0.7),

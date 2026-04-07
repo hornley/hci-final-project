@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:hci_final_project/theme/app_theme.dart';
 import '../models/quiz_problem.dart';
+import '../local_storage.dart';
 import '../progress_manager.dart';
 import '../quest_manager.dart';
 import '../widgets/drag_drop.dart';
@@ -177,7 +178,14 @@ class QuizResultsScreen extends StatefulWidget {
 }
 
 class _QuizResultsScreenState extends State<QuizResultsScreen> {
+  static const int _baseQuizExpReward = 15;
+  static const int _baseQuizCoinReward = 5;
+  static const int _perCorrectExpReward = 2;
+  static const int _perCorrectCoinReward = 1;
+
   QuestCompletionResult? _rewardResult;
+  int _quizExpReward = 0;
+  int _quizCoinReward = 0;
 
   @override
   void initState() {
@@ -202,6 +210,14 @@ class _QuizResultsScreenState extends State<QuizResultsScreen> {
       totalQuestions: totalQuestions,
     );
 
+    final quizExpReward =
+        _baseQuizExpReward + (correctAnswers * _perCorrectExpReward);
+    final quizCoinReward =
+        _baseQuizCoinReward + (correctAnswers * _perCorrectCoinReward);
+
+    await LocalStorage.addExp(quizExpReward);
+    await LocalStorage.addCoins(quizCoinReward);
+
     final result = await QuestManager.completeQuestsForLesson(
       lessonTitle: widget.lessonTitle,
     );
@@ -209,20 +225,26 @@ class _QuizResultsScreenState extends State<QuizResultsScreen> {
 
     setState(() {
       _rewardResult = result;
+      _quizExpReward = quizExpReward;
+      _quizCoinReward = quizCoinReward;
     });
 
-    if (result.hasRewards) {
-      final questCount = result.completedQuests.length;
-      final questLabel = questCount == 1 ? 'quest' : 'quests';
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            'Completed $questCount $questLabel. '
-            '+${result.totalExpReward} EXP, +${result.totalCoinReward} coins.',
-          ),
-        ),
-      );
-    }
+    final questCount = result.completedQuests.length;
+    final questLabel = questCount == 1 ? 'quest' : 'quests';
+    final totalExp = quizExpReward + result.totalExpReward;
+    final totalCoins = quizCoinReward + result.totalCoinReward;
+
+    final message = result.hasRewards
+        ? 'Quiz reward: +$quizExpReward EXP, +$quizCoinReward coins. '
+              'Completed $questCount $questLabel. '
+              '+${result.totalExpReward} EXP, +${result.totalCoinReward} coins.'
+        : 'Quiz reward: +$quizExpReward EXP, +$quizCoinReward coins.';
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text('$message Total: +$totalExp EXP, +$totalCoins coins.'),
+      ),
+    );
   }
 
   @override
@@ -239,26 +261,25 @@ class _QuizResultsScreenState extends State<QuizResultsScreen> {
       ),
       body: Column(
         children: [
-          if (_rewardResult?.hasRewards == true)
-            Container(
-              width: double.infinity,
-              margin: const EdgeInsets.fromLTRB(16, 16, 16, 0),
-              padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(
-                color: Theme.of(
-                  context,
-                ).colorScheme.surfaceVariant.withOpacity(0.4),
-                borderRadius: BorderRadius.circular(10),
-              ),
-              child: Text(
-                'Daily quest rewards collected: '
-                '+${_rewardResult!.totalExpReward} EXP, '
-                '+${_rewardResult!.totalCoinReward} coins',
-                style: TextStyle(
-                  color: Theme.of(context).colorScheme.onSurface,
-                ),
-              ),
+          Container(
+            width: double.infinity,
+            margin: const EdgeInsets.fromLTRB(16, 16, 16, 0),
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: Theme.of(
+                context,
+              ).colorScheme.surfaceVariant.withOpacity(0.4),
+              borderRadius: BorderRadius.circular(10),
             ),
+            child: Text(
+              _rewardResult?.hasRewards == true
+                  ? 'Rewards collected: '
+                        'Quiz +$_quizExpReward EXP, +$_quizCoinReward coins • '
+                        'Quest +${_rewardResult!.totalExpReward} EXP, +${_rewardResult!.totalCoinReward} coins'
+                  : 'Quiz rewards collected: +$_quizExpReward EXP, +$_quizCoinReward coins',
+              style: TextStyle(color: Theme.of(context).colorScheme.onSurface),
+            ),
+          ),
 
           // 🔹 LIST
           Expanded(
