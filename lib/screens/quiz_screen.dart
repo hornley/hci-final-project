@@ -69,10 +69,10 @@ class _QuizScreenState extends State<QuizScreen> {
     final themeColor = widget.themeColor;
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final primary = Theme.of(context).colorScheme.primary;
-    final buttonBackground = isDark ? primary : (themeColor ?? primary);
-    final buttonForeground = isDark
-        ? Colors.white
-        : Theme.of(context).colorScheme.onPrimary;
+    final buttonBackground = isDark 
+        ? Colors.blue[600]!  // Brighter blue for dark mode
+        : (themeColor ?? primary);
+    final buttonForeground = Colors.white;
 
     Widget questionWidget;
 
@@ -141,7 +141,13 @@ class _QuizScreenState extends State<QuizScreen> {
                     backgroundColor: buttonBackground,
                     foregroundColor: buttonForeground,
                   ),
-                  child: const Text("Previous"),
+                  child: Text(
+                    "Previous",
+                    style: TextStyle(
+                      color: buttonForeground,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
                 ),
                 ElevatedButton(
                   onPressed: _nextQuestion,
@@ -149,7 +155,13 @@ class _QuizScreenState extends State<QuizScreen> {
                     backgroundColor: buttonBackground,
                     foregroundColor: buttonForeground,
                   ),
-                  child: Text(isLastQuestion ? "Finish" : "Next"),
+                  child: Text(
+                    isLastQuestion ? "Finish" : "Next",
+                    style: TextStyle(
+                      color: buttonForeground,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
                 ),
               ],
             ),
@@ -253,10 +265,10 @@ class _QuizResultsScreenState extends State<QuizResultsScreen> {
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final primary = Theme.of(context).colorScheme.primary;
-    final buttonBackground = isDark ? primary : (widget.themeColor ?? primary);
-    final buttonForeground = isDark
-        ? Colors.white
-        : Theme.of(context).colorScheme.onPrimary;
+    final buttonBackground = isDark 
+        ? Colors.blue[600]!  // Brighter blue for dark mode
+        : (widget.themeColor ?? primary);
+    final buttonForeground = Colors.white;
 
     return Scaffold(
       appBar: AppBar(
@@ -358,7 +370,13 @@ class _QuizResultsScreenState extends State<QuizResultsScreen> {
                   backgroundColor: buttonBackground,
                   foregroundColor: buttonForeground,
                 ),
-                child: const Text("Back to Lessons"),
+                child: Text(
+                  "Back to Lessons",
+                  style: TextStyle(
+                    color: buttonForeground,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
               ),
             ),
           ),

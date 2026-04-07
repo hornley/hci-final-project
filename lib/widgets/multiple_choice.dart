@@ -18,7 +18,14 @@ class MultipleChoiceQuestion extends StatelessWidget {
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
-        Text(problem.question, style: const TextStyle(fontSize: 20)),
+        Text(
+          problem.question,
+          style: TextStyle(
+            fontSize: 20,
+            fontWeight: FontWeight.w600,
+            color: Theme.of(context).colorScheme.onSurface,
+          ),
+        ),
         const SizedBox(height: 30),
         ...?problem.options?.map(
           (option) => Padding(
@@ -27,9 +34,19 @@ class MultipleChoiceQuestion extends StatelessWidget {
               onPressed: () => onAnswerSelected(option),
               style: ElevatedButton.styleFrom(
                 minimumSize: const Size(double.infinity, 50),
-                backgroundColor: selectedAnswer == option ? Colors.blue : null,
+                backgroundColor: selectedAnswer == option
+                    ? Theme.of(context).colorScheme.primary
+                    : Theme.of(context).colorScheme.surfaceVariant,
               ),
-              child: Text(option, style: const TextStyle(fontSize: 18)),
+              child: Text(
+                option,
+                style: TextStyle(
+                  fontSize: 18,
+                  color: selectedAnswer == option
+                      ? Colors.white
+                      : Theme.of(context).colorScheme.onSurface,
+                ),
+              ),
             ),
           ),
         ),

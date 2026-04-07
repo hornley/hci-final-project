@@ -18,19 +18,18 @@ class CreateAccountScreen extends StatefulWidget {
 class _CreateAccountScreenState extends State<CreateAccountScreen> {
   final _formKey = GlobalKey<FormState>();
   final _phoneController = TextEditingController();
-  final _emailController = TextEditingController();
   final _usernameController = TextEditingController();
   final _passwordController = TextEditingController();
   final _confirmPasswordController = TextEditingController();
 
   bool _obscurePassword = true;
   bool _obscureConfirmPassword = true;
+  bool _isLoading = false;
 
   @override
   void dispose() {
     _phoneController.dispose();
     _usernameController.dispose();
-    _emailController.dispose();
     _passwordController.dispose();
     _confirmPasswordController.dispose();
     super.dispose();
@@ -39,7 +38,6 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
   void _createAccount() async {
     if (_formKey.currentState!.validate()) {
       try {
-        final username = _usernameController.text.trim();
         await LocalStorage.createAccount(
           firstName: username,
           lastName: '',
@@ -47,12 +45,101 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
           age: 0,
           phone: _phoneController.text.trim(),
           email: _emailController.text.trim(),
-          username: username,
+          username: _usernameController.text.trim(),
           password: _passwordController.text.trim(),
         );
 
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Account created successfully!')),
+        if (!mounted) return;
+
+        setState(() {
+          _isLoading = false;
+        });
+
+        // Show success confirmation dialog
+        showDialog(
+          context: context,
+          barrierDismissible: false,
+          builder: (context) => Dialog(
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(16),
+            ),
+            child: Padding(
+              padding: const EdgeInsets.all(24),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Container(
+                    width: 70,
+                    height: 70,
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF4CAF50),
+                      shape: BoxShape.circle,
+                    ),
+                    child: const Icon(
+                      Icons.check,
+                      color: Colors.white,
+                      size: 40,
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  Text(
+                    'Account Created!',
+                    style: GoogleFonts.poppins(
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                      color: Theme.of(context).colorScheme.onSurface,
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  Text(
+                    'Your account has been successfully created.',
+                    textAlign: TextAlign.center,
+                    style: GoogleFonts.inter(
+                      fontSize: 14,
+                      color: Theme.of(
+                        context,
+                      ).colorScheme.onSurface.withOpacity(0.7),
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    'Username: ${_usernameController.text.trim()}',
+                    textAlign: TextAlign.center,
+                    style: GoogleFonts.inter(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w600,
+                      color: const Color(0xFF3E5C8A),
+                    ),
+                  ),
+                  const SizedBox(height: 24),
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(vertical: 12),
+                        backgroundColor: const Color(0xFF3E5C8A),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                      ),
+                      onPressed: () {
+                        Navigator.pop(context);
+                        Navigator.pop(context);
+                      },
+                      child: Text(
+                        'Back to Login',
+                        style: GoogleFonts.poppins(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w600,
+                          color: Colors.white,
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
         );
 
         if (!mounted) {
@@ -60,9 +147,13 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
         }
         Navigator.pop(context);
       } catch (e) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text(e.toString())));
+        setState(() {
+          _isLoading = false;
+        });
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(e.toString()), backgroundColor: Colors.red),
+        );
       }
     }
   }
@@ -82,6 +173,11 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
       context,
       MaterialPageRoute(builder: (context) => const HomeScreen()),
     );
+  }
+
+  bool _isUsernameValid() {
+    final username = _usernameController.text.trim();
+    return username.length >= 6;
   }
 
   @override
@@ -177,9 +273,7 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
                           if (value == null || value.isEmpty) {
                             return 'Email is required';
                           }
-                          if (!RegExp(
-                            r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$',
-                          ).hasMatch(value)) {
+                          if (!RegExp(r'^[a-zA-Z0-9._%-]+$').hasMatch(value)) {
                             return 'Invalid email format';
                           }
                           return null;
@@ -280,12 +374,15 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
                     const SizedBox(height: 24),
 
                     _hoverButton(
-                      label: 'Create Account',
-                      onPressed: _createAccount,
+                      label: _isLoading
+                          ? 'Creating Account...'
+                          : 'Create Account',
+                      onPressed: _isLoading ? () {} : _createAccount,
                       baseColor: const Color(0xFF3E5C8A),
                       hoverColor: const Color(0xFF2F4A74),
                       textColor: Colors.white,
                       hoverTextColor: Colors.white,
+                      isLoading: _isLoading,
                     ),
                     const SizedBox(height: 18),
                     Row(
@@ -393,6 +490,7 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
     required Color textColor,
     required Color hoverTextColor,
     Color? borderColor,
+    bool isLoading = false,
   }) {
     bool isHovered = false;
     final buttonBorder = borderColor ?? baseColor;
@@ -407,14 +505,18 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
               duration: const Duration(milliseconds: 160),
               curve: Curves.easeOut,
               decoration: BoxDecoration(
-                color: isHovered ? hoverColor : baseColor,
+                color: isLoading
+                    ? baseColor.withOpacity(0.7)
+                    : (isHovered ? hoverColor : baseColor),
                 borderRadius: BorderRadius.circular(14),
                 border: Border.all(color: buttonBorder, width: 1),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withOpacity(isHovered ? 0.2 : 0.12),
-                    blurRadius: isHovered ? 18 : 12,
-                    offset: Offset(0, isHovered ? 10 : 6),
+                    color: Colors.black.withOpacity(
+                      isHovered && !isLoading ? 0.2 : 0.12,
+                    ),
+                    blurRadius: isHovered && !isLoading ? 18 : 12,
+                    offset: Offset(0, isHovered && !isLoading ? 10 : 6),
                   ),
                 ],
               ),
@@ -422,19 +524,45 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
                 color: Colors.transparent,
                 child: InkWell(
                   borderRadius: BorderRadius.circular(14),
-                  onTap: onPressed,
+                  onTap: isLoading ? null : onPressed,
                   child: Padding(
                     padding: const EdgeInsets.symmetric(vertical: 14),
                     child: Center(
-                      child: Text(
-                        label,
-                        style: GoogleFonts.poppins(
-                          fontSize: 14,
-                          letterSpacing: 0.4,
-                          fontWeight: FontWeight.w600,
-                          color: isHovered ? hoverTextColor : textColor,
-                        ),
-                      ),
+                      child: isLoading
+                          ? Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                SizedBox(
+                                  width: 18,
+                                  height: 18,
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2,
+                                    valueColor: AlwaysStoppedAnimation<Color>(
+                                      textColor.withOpacity(0.8),
+                                    ),
+                                  ),
+                                ),
+                                const SizedBox(width: 12),
+                                Text(
+                                  label,
+                                  style: GoogleFonts.poppins(
+                                    fontSize: 14,
+                                    letterSpacing: 0.4,
+                                    fontWeight: FontWeight.w600,
+                                    color: textColor.withOpacity(0.8),
+                                  ),
+                                ),
+                              ],
+                            )
+                          : Text(
+                              label,
+                              style: GoogleFonts.poppins(
+                                fontSize: 14,
+                                letterSpacing: 0.4,
+                                fontWeight: FontWeight.w600,
+                                color: isHovered ? hoverTextColor : textColor,
+                              ),
+                            ),
                     ),
                   ),
                 ),
