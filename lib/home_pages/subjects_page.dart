@@ -28,6 +28,7 @@ class SubjectsPage extends StatelessWidget {
               meta: "+9 lessons",
               chipLabel: "Linear Algebra",
               color: const Color(0xFFFBF0F7),
+              icon: "assets/icons/linear.png",
               onTap: () {
                 Navigator.push(
                   context,
@@ -48,6 +49,7 @@ class SubjectsPage extends StatelessWidget {
               meta: "+2 lessons",
               chipLabel: "Chemistry",
               color: const Color(0xFFFAF1C2),
+              icon: "assets/icons/chemistry.png",
               onTap: () {
                 Navigator.push(
                   context,
@@ -68,6 +70,7 @@ class SubjectsPage extends StatelessWidget {
               meta: "+2 lessons",
               chipLabel: "Calculus",
               color: const Color(0xFFE2F2EF),
+              icon: "assets/icons/calculus.png",
               onTap: () {
                 Navigator.push(
                   context,
@@ -88,6 +91,7 @@ class SubjectsPage extends StatelessWidget {
               meta: "+2 lessons",
               chipLabel: "Physics",
               color: const Color(0xFFF3F1EC),
+              icon: "assets/icons/physics.png",
               onTap: () {
                 Navigator.push(
                   context,
@@ -181,6 +185,7 @@ class SubjectsPage extends StatelessWidget {
     required String meta,
     required String chipLabel,
     required Color color,
+    required String icon,
     required VoidCallback onTap,
   }) {
     final useDarkText = color.computeLuminance() > 0.7;
@@ -236,6 +241,7 @@ class SubjectsPage extends StatelessWidget {
                       ),
                     ),
                   ),
+                  Image.asset(icon, width: 28, height: 28),
                 ],
               ),
               const SizedBox(height: 16),

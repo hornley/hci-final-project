@@ -20,6 +20,7 @@ class _LoginScreenState extends State<LoginScreen> {
   final TextEditingController _usernameController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
   bool _loading = true;
+  bool _isLoggingIn = false;
   String _errorMessage = '';
   Timer? _errorTimer;
 
@@ -73,30 +74,140 @@ class _LoginScreenState extends State<LoginScreen> {
     String username = _usernameController.text.trim();
     String password = _passwordController.text.trim();
 
-    bool success = await LocalStorage.login(username, password);
-
-    // Allow admin login
-    if (!success && username == 'admin' && password == 'admin') {
-      success = true;
-      await LocalStorage.setLoggedIn(true);
-      await LocalStorage.setCurrentUsername('admin');
-
-      // Print all accounts in storage
-      List<Map<String, dynamic>> accounts = await LocalStorage.getAccounts();
-      print("===== ALL ACCOUNTS IN STORAGE =====");
-      for (var account in accounts) {
-        print(account);
-      }
-      print("==================================");
+    if (username.isEmpty || password.isEmpty) {
+      setState(() {
+        _errorMessage = 'Please enter username and password';
+      });
+      return;
     }
 
-    if (success) {
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (context) => const HomeScreen()),
-      );
-    } else {
-      _showLoginError('Invalid username or password');
+    setState(() {
+      _isLoggingIn = true;
+      _errorMessage = '';
+    });
+
+    try {
+      // Simulate network delay for better UX
+      await Future.delayed(const Duration(milliseconds: 1000));
+
+      bool success = await LocalStorage.login(username, password);
+
+      // Allow admin login
+      if (!success && username == 'admin' && password == 'admin') {
+        success = true;
+        await LocalStorage.setLoggedIn(true);
+        await LocalStorage.setCurrentUsername('admin');
+
+        // Print all accounts in storage
+        List<Map<String, dynamic>> accounts = await LocalStorage.getAccounts();
+        print("===== ALL ACCOUNTS IN STORAGE =====");
+        for (var account in accounts) {
+          print(account);
+        }
+        print("==================================");
+      }
+
+      if (!mounted) return;
+
+      if (success) {
+        setState(() {
+          _isLoggingIn = false;
+        });
+
+        // Show success confirmation dialog
+        showDialog(
+          context: context,
+          barrierDismissible: false,
+          builder: (context) => Dialog(
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(16),
+            ),
+            child: Padding(
+              padding: const EdgeInsets.all(24),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Container(
+                    width: 70,
+                    height: 70,
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF4CAF50),
+                      shape: BoxShape.circle,
+                    ),
+                    child: const Icon(
+                      Icons.check,
+                      color: Colors.white,
+                      size: 40,
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  Text(
+                    'Login Successful!',
+                    style: GoogleFonts.poppins(
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                      color: Theme.of(context).colorScheme.onSurface,
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  Text(
+                    'Welcome back, $username!',
+                    textAlign: TextAlign.center,
+                    style: GoogleFonts.inter(
+                      fontSize: 14,
+                      color: Theme.of(context)
+                          .colorScheme
+                          .onSurface
+                          .withOpacity(0.7),
+                    ),
+                  ),
+                  const SizedBox(height: 24),
+                  SizedBox(
+                    width: 180,
+                    child: ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(vertical: 16),
+                        backgroundColor: const Color(0xFF3E5C8A),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(20),
+                        ),
+                      ),
+                      onPressed: () {
+                        Navigator.pop(context);
+                        Navigator.pushReplacement(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => const HomeScreen(),
+                          ),
+                        );
+                      },
+                      child: Text(
+                        'Continue',
+                        style: GoogleFonts.poppins(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w600,
+                          color: Colors.white,
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        );
+      } else {
+        setState(() {
+          _isLoggingIn = false;
+          _errorMessage = 'Invalid username or password';
+        });
+      }
+    } catch (e) {
+      if (!mounted) return;
+      setState(() {
+        _isLoggingIn = false;
+        _errorMessage = 'Login failed: ${e.toString()}';
+      });
     }
   }
 
@@ -165,9 +276,10 @@ class _LoginScreenState extends State<LoginScreen> {
                   const SizedBox(height: 24),
 
                   _buildTextField(
-                    icon: Icons.person_outline_rounded,
+                    icon: Icons.person_outline,
                     hint: "Username",
                     controller: _usernameController,
+                    enableInput: !_isLoggingIn,
                   ),
                   const SizedBox(height: 15),
                   _buildTextField(
@@ -175,6 +287,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     hint: "Password",
                     obscure: true,
                     controller: _passwordController,
+                    enableInput: !_isLoggingIn,
                   ),
                   Align(
                     alignment: Alignment.centerRight,
@@ -207,11 +320,12 @@ class _LoginScreenState extends State<LoginScreen> {
                   const SizedBox(height: 10),
                   _hoverButton(
                     label: "LOGIN",
-                    onPressed: _login,
+                    onPressed: _isLoggingIn ? () {} : _login,
                     baseColor: const Color(0xFF3E5C8A),
                     hoverColor: const Color(0xFF2F4A74),
                     textColor: Colors.white,
                     hoverTextColor: Colors.white,
+                    isLoading: _isLoggingIn,
                   ),
                   const SizedBox(height: 18),
                   Row(
@@ -292,6 +406,7 @@ class _LoginScreenState extends State<LoginScreen> {
     required IconData icon,
     required String hint,
     bool obscure = false,
+    bool enableInput = true,
     TextEditingController? controller,
   }) {
     return Padding(
@@ -300,6 +415,7 @@ class _LoginScreenState extends State<LoginScreen> {
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 2),
         child: TextField(
           controller: controller,
+          enabled: enableInput,
           obscureText: obscure,
           style: GoogleFonts.inter(
             fontSize: 14,
@@ -334,6 +450,7 @@ class _LoginScreenState extends State<LoginScreen> {
     required Color textColor,
     required Color hoverTextColor,
     Color? borderColor,
+    bool isLoading = false,
   }) {
     bool isHovered = false;
     final buttonBorder = borderColor ?? baseColor;
@@ -348,14 +465,14 @@ class _LoginScreenState extends State<LoginScreen> {
               duration: const Duration(milliseconds: 160),
               curve: Curves.easeOut,
               decoration: BoxDecoration(
-                color: isHovered ? hoverColor : baseColor,
+                color: isLoading ? baseColor.withOpacity(0.7) : (isHovered ? hoverColor : baseColor),
                 borderRadius: BorderRadius.circular(14),
                 border: Border.all(color: buttonBorder, width: 1),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withValues(alpha: isHovered ? 0.2 : 0.12),
-                    blurRadius: isHovered ? 18 : 12,
-                    offset: Offset(0, isHovered ? 10 : 6),
+                    color: Colors.black.withOpacity(isHovered && !isLoading ? 0.2 : 0.12),
+                    blurRadius: isHovered && !isLoading ? 18 : 12,
+                    offset: Offset(0, isHovered && !isLoading ? 10 : 6),
                   ),
                 ],
               ),
@@ -363,19 +480,45 @@ class _LoginScreenState extends State<LoginScreen> {
                 color: Colors.transparent,
                 child: InkWell(
                   borderRadius: BorderRadius.circular(14),
-                  onTap: onPressed,
+                  onTap: isLoading ? null : onPressed,
                   child: Padding(
                     padding: const EdgeInsets.symmetric(vertical: 14),
                     child: Center(
-                      child: Text(
-                        label,
-                        style: GoogleFonts.poppins(
-                          fontSize: 14,
-                          letterSpacing: 1,
-                          fontWeight: FontWeight.w600,
-                          color: isHovered ? hoverTextColor : textColor,
-                        ),
-                      ),
+                      child: isLoading
+                          ? Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                SizedBox(
+                                  width: 18,
+                                  height: 18,
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2,
+                                    valueColor: AlwaysStoppedAnimation<Color>(
+                                      textColor.withOpacity(0.8),
+                                    ),
+                                  ),
+                                ),
+                                const SizedBox(width: 12),
+                                Text(
+                                  'Logging in...',
+                                  style: GoogleFonts.poppins(
+                                    fontSize: 14,
+                                    letterSpacing: 1,
+                                    fontWeight: FontWeight.w600,
+                                    color: textColor.withOpacity(0.8),
+                                  ),
+                                ),
+                              ],
+                            )
+                          : Text(
+                              label,
+                              style: GoogleFonts.poppins(
+                                fontSize: 14,
+                                letterSpacing: 1,
+                                fontWeight: FontWeight.w600,
+                                color: isHovered ? hoverTextColor : textColor,
+                              ),
+                            ),
                     ),
                   ),
                 ),

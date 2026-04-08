@@ -72,8 +72,10 @@ class _QuizScreenState extends State<QuizScreen> {
     final themeColor = widget.themeColor;
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final primary = Theme.of(context).colorScheme.primary;
-    final buttonBackground = isDark ? primary : (themeColor ?? primary);
-    final buttonForeground = isDark ? Colors.white : Colors.black;
+    final buttonBackground = isDark 
+        ? const Color(0xFF1565C0)  // Darker blue for dark mode
+        : (themeColor ?? primary);
+    final buttonForeground = Colors.white;
 
     Widget questionWidget;
 
@@ -142,7 +144,13 @@ class _QuizScreenState extends State<QuizScreen> {
                     backgroundColor: buttonBackground,
                     foregroundColor: buttonForeground,
                   ),
-                  child: const Text("Previous"),
+                  child: Text(
+                    "Previous",
+                    style: TextStyle(
+                      color: buttonForeground,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
                 ),
                 ElevatedButton(
                   onPressed: _nextQuestion,
@@ -150,7 +158,13 @@ class _QuizScreenState extends State<QuizScreen> {
                     backgroundColor: buttonBackground,
                     foregroundColor: buttonForeground,
                   ),
-                  child: Text(isLastQuestion ? "Finish" : "Next"),
+                  child: Text(
+                    isLastQuestion ? "Finish" : "Next",
+                    style: TextStyle(
+                      color: buttonForeground,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
                 ),
               ],
             ),
@@ -284,8 +298,10 @@ class _QuizResultsScreenState extends State<QuizResultsScreen> {
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final primary = Theme.of(context).colorScheme.primary;
-    final buttonBackground = isDark ? primary : (widget.themeColor ?? primary);
-    final buttonForeground = isDark ? Colors.white : Colors.black;
+    final buttonBackground = isDark
+        ? const Color(0xFF1565C0)  // Darker blue for dark mode
+        : (widget.themeColor ?? primary);
+    final buttonForeground = Colors.white;
 
     return Scaffold(
       appBar: AppBar(
@@ -294,27 +310,26 @@ class _QuizResultsScreenState extends State<QuizResultsScreen> {
       ),
       body: Column(
         children: [
-          Container(
-            width: double.infinity,
-            margin: const EdgeInsets.fromLTRB(16, 16, 16, 0),
-            padding: const EdgeInsets.all(12),
-            decoration: BoxDecoration(
-              color: Theme.of(
-                context,
-              ).colorScheme.surfaceContainerHighest.withValues(alpha: 0.4),
-              borderRadius: BorderRadius.circular(10),
+          if (_rewardResult?.hasRewards == true)
+            Container(
+              width: double.infinity,
+              margin: const EdgeInsets.fromLTRB(16, 16, 16, 0),
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: Theme.of(
+                  context,
+                ).colorScheme.surfaceVariant.withOpacity(0.4),
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: Text(
+                'Daily quest rewards collected: '
+                '+${_rewardResult!.totalExpReward} EXP, '
+                '+${_rewardResult!.totalCoinReward} coins',
+                style: TextStyle(
+                  color: Theme.of(context).colorScheme.onSurface,
+                ),
+              ),
             ),
-            child: Text(
-              _isRetakeWithoutRewards
-                  ? 'Retake detected: no rewards granted for this lesson quiz.'
-                  : _rewardResult?.hasRewards == true
-                  ? 'Rewards collected: '
-                        'Quiz +$_quizExpReward EXP, +$_quizCoinReward coins • '
-                        'Quest +${_rewardResult!.totalExpReward} EXP, +${_rewardResult!.totalCoinReward} coins'
-                  : 'Quiz rewards collected: +$_quizExpReward EXP, +$_quizCoinReward coins',
-              style: TextStyle(color: Theme.of(context).colorScheme.onSurface),
-            ),
-          ),
 
           // 🔹 LIST
           Expanded(
@@ -391,7 +406,13 @@ class _QuizResultsScreenState extends State<QuizResultsScreen> {
                   backgroundColor: buttonBackground,
                   foregroundColor: buttonForeground,
                 ),
-                child: const Text("Back to Lessons"),
+                child: Text(
+                  "Back to Lessons",
+                  style: TextStyle(
+                    color: buttonForeground,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
               ),
             ),
           ),
