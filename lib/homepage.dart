@@ -3,7 +3,6 @@ import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:lottie/lottie.dart';
 import 'package:hci_final_project/login_wrapper.dart';
 import 'package:hci_final_project/theme/app_theme.dart';
 import 'package:hci_final_project/widgets/bottom_nav_bar.dart';
@@ -18,6 +17,69 @@ import 'package:hci_final_project/home_pages/shop_page.dart';
 import 'package:hci_final_project/home_pages/about_page.dart';
 import 'package:hci_final_project/data/avatar_catalog.dart';
 import 'package:hci_final_project/progress_manager.dart';
+
+// Animated Trophy Widget
+class _AnimatedAchievementTrophy extends StatefulWidget {
+  const _AnimatedAchievementTrophy();
+
+  @override
+  State<_AnimatedAchievementTrophy> createState() =>
+      _AnimatedAchievementTrophyState();
+}
+
+class _AnimatedAchievementTrophyState extends State<_AnimatedAchievementTrophy>
+    with SingleTickerProviderStateMixin {
+  late AnimationController _controller;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      duration: const Duration(seconds: 2),
+      vsync: this,
+    )..repeat(reverse: false);
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AnimatedBuilder(
+      animation: _controller,
+      builder: (context, child) {
+        // Bounce animation: go down then up
+        final bounce = math.sin(_controller.value * math.pi * 2) * 8;
+        // Rotation: full spin
+        final rotation = _controller.value * math.pi * 2;
+
+        return Transform.translate(
+          offset: Offset(0, bounce),
+          child: Transform.rotate(
+            angle: rotation * 0.2, // Gentle rotation
+            child: Container(
+              width: 100,
+              height: 100,
+              decoration: BoxDecoration(
+                color: const Color(0xFF395886).withOpacity(0.1),
+                shape: BoxShape.circle,
+              ),
+              child: Image.asset(
+                'icons/trophy.png',
+                width: 70,
+                height: 70,
+                fit: BoxFit.contain,
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
+}
 
 class _SubjectPiePainter extends CustomPainter {
   final List<SubjectProgressData> subjects;
@@ -385,7 +447,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Image.asset("assets/logo.png", height: 60),
+                        Image.asset("logo.png", height: 60),
                         const SizedBox(height: 12),
                         Text(
                           "DASHBOARD",
@@ -735,11 +797,8 @@ class _HomeScreenState extends State<HomeScreen> {
 
   Widget _buildAchievementsCard() {
     final backgroundColor = Theme.of(context).colorScheme.primary.withOpacity(0.25);
-    final useDarkText = true;
     final textColor = Theme.of(context).colorScheme.onSurface;
     final mutedTextColor = Theme.of(context).colorScheme.onSurface.withOpacity(0.7);
-    final arrowButtonColor = Theme.of(context).colorScheme.primary;
-    final arrowIconColor = Colors.white;
 
     return GestureDetector(
       onTap: () {
@@ -796,10 +855,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   SizedBox(
                     width: 100,
                     height: 100,
-                    child: Lottie.network(
-                      'https://lottie.host/0ae84f73-fe39-4edf-a0b9-de502ef63de2/z6uGaXoXbn.lottie',
-                      fit: BoxFit.cover,
-                    ),
+                    child: _AnimatedAchievementTrophy(),
                   ),
                 ],
               ),
@@ -817,7 +873,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   Icon(
                     Icons.arrow_forward_rounded,
                     size: 20,
-                    color: arrowIconColor,
+                    color: Theme.of(context).colorScheme.primary,
                   ),
                 ],
               ),

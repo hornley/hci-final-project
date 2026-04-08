@@ -37,9 +37,7 @@ class _LessonDetailScreenState extends State<LessonDetailScreen> {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final primary = Theme.of(context).colorScheme.primary;
     final buttonBackground = isDark ? primary : (themeColor ?? primary);
-    final buttonForeground = isDark
-        ? Colors.white
-        : Theme.of(context).colorScheme.onPrimary;
+    final buttonForeground = Colors.white;
     final outlineForeground = isDark
         ? Colors.white
         : Theme.of(context).colorScheme.onSurface;

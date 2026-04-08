@@ -70,7 +70,7 @@ class _QuizScreenState extends State<QuizScreen> {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final primary = Theme.of(context).colorScheme.primary;
     final buttonBackground = isDark 
-        ? Colors.blue[600]!  // Brighter blue for dark mode
+        ? const Color(0xFF1565C0)  // Darker blue for dark mode
         : (themeColor ?? primary);
     final buttonForeground = Colors.white;
 
@@ -198,8 +198,6 @@ class _QuizResultsScreenState extends State<QuizResultsScreen> {
   static const int _perCorrectCoinReward = 1;
 
   QuestCompletionResult? _rewardResult;
-  int _quizExpReward = 0;
-  int _quizCoinReward = 0;
 
   @override
   void initState() {
@@ -239,8 +237,6 @@ class _QuizResultsScreenState extends State<QuizResultsScreen> {
 
     setState(() {
       _rewardResult = result;
-      _quizExpReward = quizExpReward;
-      _quizCoinReward = quizCoinReward;
     });
 
     final questCount = result.completedQuests.length;
@@ -265,8 +261,8 @@ class _QuizResultsScreenState extends State<QuizResultsScreen> {
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final primary = Theme.of(context).colorScheme.primary;
-    final buttonBackground = isDark 
-        ? Colors.blue[600]!  // Brighter blue for dark mode
+    final buttonBackground = isDark
+        ? const Color(0xFF1565C0)  // Darker blue for dark mode
         : (widget.themeColor ?? primary);
     final buttonForeground = Colors.white;
 

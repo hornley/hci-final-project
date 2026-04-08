@@ -19,6 +19,7 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
   final _formKey = GlobalKey<FormState>();
   final _phoneController = TextEditingController();
   final _usernameController = TextEditingController();
+  final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   final _confirmPasswordController = TextEditingController();
 
@@ -30,6 +31,7 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
   void dispose() {
     _phoneController.dispose();
     _usernameController.dispose();
+    _emailController.dispose();
     _passwordController.dispose();
     _confirmPasswordController.dispose();
     super.dispose();
@@ -39,7 +41,7 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
     if (_formKey.currentState!.validate()) {
       try {
         await LocalStorage.createAccount(
-          firstName: username,
+          firstName: _usernameController.text.trim(),
           lastName: '',
           middleInitial: '',
           age: 0,
@@ -175,11 +177,6 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
     );
   }
 
-  bool _isUsernameValid() {
-    final username = _usernameController.text.trim();
-    return username.length >= 6;
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -199,7 +196,7 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    Image.asset('assets/logo.png', height: 80),
+                    Image.asset('logo.png', height: 80),
                     const SizedBox(height: 10),
                     Text(
                       "MATHMASTER",
