@@ -140,7 +140,7 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
                         fontSize: 12,
                         color: Theme.of(
                           context,
-                        ).colorScheme.onSurface.withOpacity(0.6),
+                        ).colorScheme.onSurface.withValues(alpha: 0.6),
                       ),
                     ),
                     const SizedBox(height: 20),
@@ -301,7 +301,7 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
                             fontWeight: FontWeight.w500,
                             color: Theme.of(
                               context,
-                            ).colorScheme.onSurface.withOpacity(0.6),
+                            ).colorScheme.onSurface.withValues(alpha: 0.6),
                           ),
                         ),
                         const SizedBox(width: 10),
@@ -330,7 +330,7 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
                             fontSize: 12,
                             color: Theme.of(
                               context,
-                            ).colorScheme.onSurface.withOpacity(0.6),
+                            ).colorScheme.onSurface.withValues(alpha: 0.6),
                           ),
                         ),
                         TextButton(
@@ -370,7 +370,7 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
       border: InputBorder.none,
       contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
       hintStyle: GoogleFonts.inter(
-        color: Theme.of(context).colorScheme.onSurface.withOpacity(0.55),
+        color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.55),
       ),
     );
   }
@@ -412,7 +412,7 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
                 border: Border.all(color: buttonBorder, width: 1),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withOpacity(isHovered ? 0.2 : 0.12),
+                    color: Colors.black.withValues(alpha: isHovered ? 0.2 : 0.12),
                     blurRadius: isHovered ? 18 : 12,
                     offset: Offset(0, isHovered ? 10 : 6),
                   ),
@@ -464,7 +464,7 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
         borderRadius: borderRadius,
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(hovered ? 0.18 : 0.12),
+            color: Colors.black.withValues(alpha: hovered ? 0.18 : 0.12),
             blurRadius: hovered ? 22 : 18,
             offset: Offset(0, hovered ? 12 : 10),
           ),
@@ -477,9 +477,9 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
           child: Container(
             padding: padding,
             decoration: BoxDecoration(
-              color: baseTint.withOpacity(hovered ? 0.28 : 0.22),
+              color: baseTint.withValues(alpha: hovered ? 0.28 : 0.22),
               border: Border.all(
-                color: baseBorder.withOpacity(hovered ? 0.7 : 0.45),
+                color: baseBorder.withValues(alpha: hovered ? 0.7 : 0.45),
                 width: 1,
               ),
             ),
