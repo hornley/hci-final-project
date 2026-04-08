@@ -26,7 +26,6 @@ dev_dependencies:
 flutter:
   uses-material-design: true
   assets:
-    - assets/logo.png
     - assets/onboardingscreen/welcome.png
     - assets/onboardingscreen/subject.png
     - assets/onboardingscreen/exam.png
@@ -38,11 +37,10 @@ flutter:
     - assets/icons/physics.png
     - assets/icons/chemistry.png
     - assets/icons/star.png
-    - assets/subjectsbg.jpg
+    - assets/dog.jpg
+    - assets/
     - assets/splash.png
     - assets/avatars/
-    - assets/animations/
-
 flutter_native_splash:
   color: "#d5deef"
   image: assets/splash.png

@@ -70,14 +70,7 @@ class _DragDropQuestionState extends State<DragDropQuestion> {
       mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.center,
       children: [
-        Text(
-          problem.question,
-          style: TextStyle(
-            fontSize: 20,
-            fontWeight: FontWeight.w600,
-            color: Theme.of(context).colorScheme.onSurface,
-          ),
-        ),
+        Text(problem.question, style: const TextStyle(fontSize: 20)),
         const SizedBox(height: 24),
         // Draggable options
         if (problem.options != null)
@@ -91,7 +84,7 @@ class _DragDropQuestionState extends State<DragDropQuestion> {
                 feedback: Material(
                   child: Container(
                     padding: const EdgeInsets.all(12),
-                    color: Theme.of(context).colorScheme.primary,
+                    color: Colors.blue,
                     child: Text(
                       option,
                       style: const TextStyle(color: Colors.white),
@@ -100,17 +93,12 @@ class _DragDropQuestionState extends State<DragDropQuestion> {
                 ),
                 childWhenDragging: Container(
                   padding: const EdgeInsets.all(12),
-                  color: Theme.of(context).colorScheme.surfaceVariant,
-                  child: Text(
-                    option,
-                    style: TextStyle(
-                      color: Theme.of(context).colorScheme.onSurface,
-                    ),
-                  ),
+                  color: Colors.grey,
+                  child: Text(option),
                 ),
                 child: Container(
                   padding: const EdgeInsets.all(12),
-                  color: Theme.of(context).colorScheme.primary,
+                  color: Colors.blue,
                   child: Text(
                     option,
                     style: const TextStyle(color: Colors.white),
@@ -151,7 +139,7 @@ class _DragDropQuestionState extends State<DragDropQuestion> {
                     decoration: BoxDecoration(
                       color: candidateData.isEmpty
                           ? Theme.of(context).colorScheme.surfaceVariant
-                          : Theme.of(context).colorScheme.primaryContainer,
+                          : Colors.yellow[200],
                       borderRadius: BorderRadius.circular(8),
                       border: Border.all(
                         color: Theme.of(context).colorScheme.onSurface,

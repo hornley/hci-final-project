@@ -18,14 +18,7 @@ class TrueFalseQuestion extends StatelessWidget {
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
-        Text(
-          problem.question,
-          style: TextStyle(
-            fontSize: 20,
-            fontWeight: FontWeight.w600,
-            color: Theme.of(context).colorScheme.onSurface,
-          ),
-        ),
+        Text(problem.question, style: const TextStyle(fontSize: 20)),
         const SizedBox(height: 30),
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
@@ -34,19 +27,9 @@ class TrueFalseQuestion extends StatelessWidget {
               onPressed: () => onAnswerSelected(option),
               style: ElevatedButton.styleFrom(
                 minimumSize: const Size(120, 50),
-                backgroundColor: selectedAnswer == option
-                    ? Theme.of(context).colorScheme.primary
-                    : Theme.of(context).colorScheme.surfaceVariant,
+                backgroundColor: selectedAnswer == option ? Colors.blue : null,
               ),
-              child: Text(
-                option,
-                style: TextStyle(
-                  fontSize: 18,
-                  color: selectedAnswer == option
-                      ? Colors.white
-                      : Theme.of(context).colorScheme.onSurface,
-                ),
-              ),
+              child: Text(option, style: const TextStyle(fontSize: 18)),
             );
           }).toList(),
         ),

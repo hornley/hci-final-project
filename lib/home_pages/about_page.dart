@@ -83,8 +83,7 @@ class AboutPage extends StatelessWidget {
             context,
             icon: Icons.trending_up_rounded,
             title: "Progress Tracking",
-            description:
-                "Monitor your learning journey with detailed analytics",
+            description: "Monitor your learning journey with detailed analytics",
           ),
           const SizedBox(height: 12),
           _buildFeatureItem(
@@ -114,7 +113,7 @@ class AboutPage extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  "Education Team",
+                  "Zyrene Education Team",
                   style: GoogleFonts.poppins(
                     fontSize: 16,
                     fontWeight: FontWeight.w600,
@@ -265,7 +264,11 @@ class AboutPage extends StatelessWidget {
       ),
       child: Row(
         children: [
-          Icon(icon, color: Theme.of(context).colorScheme.primary, size: 24),
+          Icon(
+            icon,
+            color: Theme.of(context).colorScheme.primary,
+            size: 24,
+          ),
           const SizedBox(width: 14),
           Expanded(
             child: Column(

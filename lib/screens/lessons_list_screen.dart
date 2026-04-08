@@ -155,32 +155,12 @@ class _LessonDetailBodyState extends State<LessonDetailBody> {
     final outlineSideColor = isDark
         ? Colors.white
         : (themeColor ?? outlineForeground);
-
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(
-          "${widget.lesson.title} (${currentIndex + 1}/${widget.lesson.sections.length})",
-        ),
-        actions: const [ThemeToggleButton()],
-      ),
-      body: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          children: [
-            // CONTENT
-            Expanded(
-              child: SingleChildScrollView(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    if (section.imagePath != null) ...[
-                      Image.asset(
-                        section.imagePath!,
-                        width: double.infinity,
-                        fit: BoxFit.contain,
-                      ),
-                      const SizedBox(height: 16),
-                    ],
+    final width = MediaQuery.of(context).size.width;
+    final contentMaxWidth = width >= 1400
+        ? 760.0
+        : width >= 1100
+        ? 680.0
+        : 900.0;
 
     return Padding(
       padding: const EdgeInsets.all(16),
@@ -284,71 +264,67 @@ class _LessonDetailBodyState extends State<LessonDetailBody> {
 class _LessonSectionCard extends StatelessWidget {
   final LessonSection section;
 
-            // NAVIGATION OR FINAL BUTTONS
-            if (!isLast)
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  ElevatedButton(
-                    onPressed: currentIndex > 0 ? _previousSection : null,
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: buttonBackground,
-                      foregroundColor: buttonForeground,
-                    ),
-                    child: const Text("Previous"),
-                  ),
-                  ElevatedButton(
-                    onPressed: _nextSection,
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: buttonBackground,
-                      foregroundColor: buttonForeground,
-                    ),
-                    child: const Text("Next"),
-                  ),
-                ],
-              )
-            else
-              Column(
-                children: [
-                  if (widget.lesson.quizProblems.isNotEmpty)
-                    SizedBox(
-                      width: double.infinity,
-                      child: ElevatedButton(
-                        onPressed: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => QuizScreen(
-                                problems: widget.lesson.quizProblems,
-                                themeColor: themeColor,
-                                lessonTitle: widget.lesson.title,
-                              ),
-                            ),
-                          );
-                        },
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: buttonBackground,
-                          foregroundColor: buttonForeground,
-                        ),
-                        child: const Text("Take Quiz"),
-                      ),
-                    ),
-                  const SizedBox(height: 10),
-                  SizedBox(
-                    width: double.infinity,
-                    child: OutlinedButton(
-                      onPressed: () {
-                        Navigator.pop(context);
-                      },
-                      style: OutlinedButton.styleFrom(
-                        foregroundColor: outlineForeground,
-                        side: BorderSide(color: outlineSideColor),
-                      ),
-                      child: const Text("Back to Lessons"),
-                    ),
-                  ),
-                ],
-              ),
+  const _LessonSectionCard({super.key, required this.section});
+
+  Widget _buildContentText(BuildContext context, String text) {
+    return Text(
+      text,
+      style: GoogleFonts.inter(
+        fontSize: 14,
+        color: Theme.of(context).colorScheme.onSurface,
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final width = MediaQuery.of(context).size.width;
+    final isCompact = width < 900;
+    final imageMaxWidth = width >= 1400
+        ? 420.0
+        : width >= 1100
+        ? 480.0
+        : 560.0;
+
+    final imageWidget = section.imagePath == null
+        ? null
+        : ConstrainedBox(
+            constraints: BoxConstraints(maxWidth: imageMaxWidth),
+            child: Image.asset(
+              section.imagePath!,
+              width: double.infinity,
+              fit: BoxFit.contain,
+            ),
+          );
+
+    final contentWidget = _buildContentText(context, section.content);
+
+    final useSideBySide =
+        !isCompact && imageWidget != null && section.contentImageOrient != null;
+
+    Widget buildMainContentBlock() {
+      if (useSideBySide) {
+        final isContentLeft =
+            section.contentImageOrient == ContentImageOrient.left;
+        final left = isContentLeft
+            ? Expanded(child: contentWidget)
+            : Expanded(child: imageWidget);
+        final right = isContentLeft
+            ? Expanded(child: imageWidget)
+            : Expanded(child: contentWidget);
+
+        return Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [left, const SizedBox(width: 16), right],
+        );
+      }
+
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          if (imageWidget != null) ...[
+            Center(child: imageWidget),
+            const SizedBox(height: 12),
           ],
           contentWidget,
         ],

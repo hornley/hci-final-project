@@ -37,40 +37,21 @@ class _TypingQuestionState extends State<TypingQuestion> {
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
-        Text(
-          widget.problem.question,
-          style: TextStyle(
-            fontSize: 20,
-            fontWeight: FontWeight.w600,
-            color: Theme.of(context).colorScheme.onSurface,
-          ),
-        ),
+        Text(widget.problem.question, style: const TextStyle(fontSize: 20)),
         const SizedBox(height: 30),
         SizedBox(
           height: 60,
           child: TextField(
             controller: _controller,
-            decoration: InputDecoration(
-              border: OutlineInputBorder(
-                borderSide: BorderSide(
-                  color: Theme.of(context).colorScheme.outline,
-                ),
-              ),
+            decoration: const InputDecoration(
+              border: OutlineInputBorder(),
               hintText: "Type your answer here",
-              hintStyle: TextStyle(
-                color: Theme.of(context).colorScheme.onSurface.withOpacity(0.5),
-              ),
-              fillColor: Theme.of(context).colorScheme.surface,
-              filled: true,
-              contentPadding: const EdgeInsets.symmetric(
+              contentPadding: EdgeInsets.symmetric(
                 horizontal: 16,
                 vertical: 12,
               ),
             ),
-            style: TextStyle(
-              fontSize: 18,
-              color: Theme.of(context).colorScheme.onSurface,
-            ),
+            style: const TextStyle(fontSize: 18),
             textAlign: TextAlign.center,
             onSubmitted: (_) => _submitAnswer(),
           ),
@@ -78,16 +59,7 @@ class _TypingQuestionState extends State<TypingQuestion> {
         const SizedBox(height: 20),
         ElevatedButton(
           onPressed: _submitAnswer,
-          style: ElevatedButton.styleFrom(
-            backgroundColor: Theme.of(context).colorScheme.primary,
-          ),
-          child: Text(
-            "Submit",
-            style: TextStyle(
-              fontSize: 18,
-              color: Colors.white,
-            ),
-          ),
+          child: const Text("Submit", style: TextStyle(fontSize: 18)),
         ),
       ],
     );
