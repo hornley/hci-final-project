@@ -122,7 +122,7 @@ class _ShopPageState extends State<ShopPage> {
           'Spend coins earned from quests to unlock avatars.',
           style: GoogleFonts.poppins(
             fontSize: 14,
-            color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
+            color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6),
           ),
         ),
         const SizedBox(height: 12),
@@ -206,7 +206,7 @@ class _ShopPageState extends State<ShopPage> {
           subtitle,
           style: GoogleFonts.poppins(
             fontSize: 12,
-            color: Theme.of(context).colorScheme.onSurface.withOpacity(0.7),
+            color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.7),
           ),
         ),
         trailing: isUnlocked

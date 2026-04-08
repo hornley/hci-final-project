@@ -1,4 +1,5 @@
 import 'dart:ui';
+import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -21,6 +22,7 @@ class _LoginScreenState extends State<LoginScreen> {
   bool _loading = true;
   bool _isLoggingIn = false;
   String _errorMessage = '';
+  Timer? _errorTimer;
 
   @override
   void initState() {
@@ -46,9 +48,26 @@ class _LoginScreenState extends State<LoginScreen> {
 
   @override
   void dispose() {
+    _errorTimer?.cancel();
     _usernameController.dispose();
     _passwordController.dispose();
     super.dispose();
+  }
+
+  void _showLoginError(String message) {
+    _errorTimer?.cancel();
+    setState(() {
+      _errorMessage = message;
+    });
+
+    _errorTimer = Timer(const Duration(seconds: 3), () {
+      if (!mounted) {
+        return;
+      }
+      setState(() {
+        _errorMessage = '';
+      });
+    });
   }
 
   void _login() async {
@@ -322,7 +341,7 @@ class _LoginScreenState extends State<LoginScreen> {
                           fontWeight: FontWeight.w500,
                           color: Theme.of(
                             context,
-                          ).colorScheme.onSurface.withOpacity(0.6),
+                          ).colorScheme.onSurface.withValues(alpha: 0.6),
                         ),
                       ),
                       const SizedBox(width: 10),
@@ -351,7 +370,7 @@ class _LoginScreenState extends State<LoginScreen> {
                           fontSize: 12,
                           color: Theme.of(
                             context,
-                          ).colorScheme.onSurface.withOpacity(0.6),
+                          ).colorScheme.onSurface.withValues(alpha: 0.6),
                         ),
                       ),
                       TextButton(
@@ -410,7 +429,7 @@ class _LoginScreenState extends State<LoginScreen> {
             hintText: hint,
             hintStyle: GoogleFonts.inter(
               fontSize: 14,
-              color: Theme.of(context).colorScheme.onSurface.withOpacity(0.55),
+              color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.55),
             ),
             border: InputBorder.none,
             contentPadding: const EdgeInsets.symmetric(
@@ -529,7 +548,7 @@ class _LoginScreenState extends State<LoginScreen> {
         borderRadius: borderRadius,
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(hovered ? 0.18 : 0.12),
+            color: Colors.black.withValues(alpha: hovered ? 0.18 : 0.12),
             blurRadius: hovered ? 22 : 18,
             offset: Offset(0, hovered ? 12 : 10),
           ),
@@ -542,9 +561,9 @@ class _LoginScreenState extends State<LoginScreen> {
           child: Container(
             padding: padding,
             decoration: BoxDecoration(
-              color: baseTint.withOpacity(hovered ? 0.28 : 0.22),
+              color: baseTint.withValues(alpha: hovered ? 0.28 : 0.22),
               border: Border.all(
-                color: baseBorder.withOpacity(hovered ? 0.7 : 0.45),
+                color: baseBorder.withValues(alpha: hovered ? 0.7 : 0.45),
                 width: 1,
               ),
             ),

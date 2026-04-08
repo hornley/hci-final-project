@@ -160,7 +160,7 @@ class _ProgressPageState extends State<ProgressPage> {
           borderRadius: BorderRadius.circular(16),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.08),
+              color: Colors.black.withValues(alpha: 0.08),
               blurRadius: 6,
               offset: const Offset(0, 3),
             ),
@@ -178,7 +178,7 @@ class _ProgressPageState extends State<ProgressPage> {
                       color: Theme.of(context)
                           .colorScheme
                           .surface
-                          .withOpacity(0.6),
+                          .withValues(alpha: 0.6),
                       borderRadius: BorderRadius.circular(12),
                     ),
                     child: Padding(
@@ -236,7 +236,7 @@ class _ProgressPageState extends State<ProgressPage> {
                         value: value,
                         minHeight: 10,
                         backgroundColor:
-                            Theme.of(context).colorScheme.onSurface.withOpacity(0.12),
+                            Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.12),
                         color: barColor,
                       ),
                     ),

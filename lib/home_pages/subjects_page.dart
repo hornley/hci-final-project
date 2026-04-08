@@ -123,7 +123,7 @@ class SubjectsPage extends StatelessWidget {
         ),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.18),
+            color: Colors.black.withValues(alpha: 0.18),
             blurRadius: 16,
             offset: const Offset(0, 10),
           ),
@@ -192,7 +192,7 @@ class SubjectsPage extends StatelessWidget {
     final textColor = useDarkText ? const Color(0xFF1F232B) : Colors.white;
     final mutedTextColor = useDarkText
         ? const Color(0xFF3A3F4B)
-        : Colors.white.withOpacity(0.75);
+        : Colors.white.withValues(alpha: 0.75);
 
     return GestureDetector(
       onTap: onTap,
@@ -206,7 +206,7 @@ class SubjectsPage extends StatelessWidget {
             borderRadius: BorderRadius.circular(22),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withOpacity(0.1),
+                color: Colors.black.withValues(alpha: 0.1),
                 blurRadius: 12,
                 offset: const Offset(0, 8),
               ),
@@ -225,8 +225,8 @@ class SubjectsPage extends StatelessWidget {
                     ),
                     decoration: BoxDecoration(
                       color: useDarkText
-                          ? Colors.white.withOpacity(0.7)
-                          : Colors.white.withOpacity(0.14),
+                          ? Colors.white.withValues(alpha: 0.7)
+                          : Colors.white.withValues(alpha: 0.14),
                       borderRadius: BorderRadius.circular(12),
                     ),
                     child: Text(

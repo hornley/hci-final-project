@@ -99,7 +99,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
         // Color of the active vs inactive dots
         color: currentIndex == index
             ? Theme.of(context).colorScheme.primary
-            : Theme.of(context).colorScheme.onSurface.withOpacity(0.35),
+            : Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.35),
       ),
     );
   }
@@ -161,7 +161,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                             color: Theme.of(context)
                                 .colorScheme
                                 .onSurface
-                                .withOpacity(0.7),
+                                .withValues(alpha: 0.7),
                           ),
                         ),
                       ],
@@ -190,7 +190,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                         color: Theme.of(context)
                             .colorScheme
                             .onSurface
-                            .withOpacity(0.6),
+                            .withValues(alpha: 0.6),
                       ),
                     ),
                   ),

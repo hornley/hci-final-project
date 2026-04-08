@@ -53,7 +53,7 @@ class SettingsPage extends StatelessWidget {
                   offset: const Offset(2, 2),
                   blurRadius: 4,
                   color:
-                      Theme.of(context).colorScheme.onSurface.withOpacity(0.3),
+                      Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.3),
                 ),
               ],
             ),

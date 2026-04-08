@@ -110,7 +110,7 @@ class _ProfilePageState extends State<ProfilePage> {
             ),
 
             Divider(
-              color: Theme.of(context).colorScheme.onSurface.withOpacity(0.2),
+              color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.2),
             ),
 
             // 🔹 Stats Section
@@ -153,7 +153,7 @@ class _ProfilePageState extends State<ProfilePage> {
                           backgroundColor: Theme.of(context)
                               .colorScheme
                               .onSurface
-                              .withOpacity(0.12),
+                              .withValues(alpha: 0.12),
                           color: Theme.of(context).colorScheme.primary,
                         ),
                         const SizedBox(height: 8),
@@ -164,7 +164,7 @@ class _ProfilePageState extends State<ProfilePage> {
                             color: Theme.of(context)
                                 .colorScheme
                                 .onSurface
-                                .withOpacity(0.7),
+                                .withValues(alpha: 0.7),
                           ),
                         ),
                       ],
@@ -172,7 +172,7 @@ class _ProfilePageState extends State<ProfilePage> {
             ),
 
             Divider(
-              color: Theme.of(context).colorScheme.onSurface.withOpacity(0.2),
+              color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.2),
             ),
 
             // 🔹 Settings Button

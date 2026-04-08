@@ -111,7 +111,7 @@ class _QuestsPageState extends State<QuestsPage> {
             'Complete quests by finishing lesson quizzes.',
             style: GoogleFonts.poppins(
               fontSize: 14,
-              color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
+              color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6),
             ),
           ),
           if (widget.onOpenShop != null) ...[
@@ -248,7 +248,7 @@ class _QuestsPageState extends State<QuestsPage> {
             borderRadius: BorderRadius.circular(999),
             backgroundColor: Theme.of(
               context,
-            ).colorScheme.onSurface.withOpacity(0.12),
+            ).colorScheme.onSurface.withValues(alpha: 0.12),
             color: const Color(0xFF395886),
           ),
           const SizedBox(height: 8),
@@ -256,7 +256,7 @@ class _QuestsPageState extends State<QuestsPage> {
             '${progressCurrent.toInt()} / ${progressMax.toInt()} EXP toward next level',
             style: GoogleFonts.poppins(
               fontSize: 12,
-              color: Theme.of(context).colorScheme.onSurface.withOpacity(0.7),
+              color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.7),
             ),
           ),
         ],
@@ -302,10 +302,10 @@ class _QuestsPageState extends State<QuestsPage> {
                     ? Icons.check_circle
                     : Icons.radio_button_unchecked),
           color: _isAdmin
-              ? Theme.of(context).colorScheme.onSurface.withOpacity(0.45)
+              ? Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.45)
               : (quest.isCompleted
                     ? Colors.green
-                    : Theme.of(context).colorScheme.onSurface.withOpacity(0.5)),
+                    : Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.5)),
         ),
         title: Text(
           quest.title,
@@ -318,7 +318,7 @@ class _QuestsPageState extends State<QuestsPage> {
           subtitle,
           style: GoogleFonts.poppins(
             fontSize: 12,
-            color: Theme.of(context).colorScheme.onSurface.withOpacity(0.7),
+            color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.7),
           ),
         ),
         isThreeLine: true,
