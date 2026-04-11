@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_math_fork/flutter_math.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:hci_final_project/progress_manager.dart';
 import 'package:hci_final_project/theme/app_theme.dart';
@@ -382,12 +383,85 @@ class _LessonSectionCardState extends State<_LessonSectionCard> {
   }
 
   Widget _buildContentText(BuildContext context, String text) {
-    return Text(
-      text,
-      style: GoogleFonts.inter(
-        fontSize: 14,
-        color: Theme.of(context).colorScheme.onSurface,
-      ),
+    final textStyle = GoogleFonts.inter(
+      fontSize: 14,
+      color: Theme.of(context).colorScheme.onSurface,
+    );
+
+    final blockRegex = RegExp(r'\$\$([\s\S]*?)\$\$');
+    final widgets = <Widget>[];
+    var cursor = 0;
+
+    for (final match in blockRegex.allMatches(text)) {
+      final before = text.substring(cursor, match.start);
+      if (before.trim().isNotEmpty) {
+        widgets.add(_buildInlineMathText(before, textStyle));
+      }
+
+      final blockFormula = (match.group(1) ?? '').trim();
+      if (blockFormula.isNotEmpty) {
+        widgets.add(
+          Padding(
+            padding: const EdgeInsets.symmetric(vertical: 8),
+            child: SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              child: Math.tex(
+                blockFormula,
+                mathStyle: MathStyle.display,
+                textStyle: textStyle,
+                onErrorFallback: (error) =>
+                    Text(blockFormula, style: textStyle),
+              ),
+            ),
+          ),
+        );
+      }
+      cursor = match.end;
+    }
+
+    final tail = text.substring(cursor);
+    if (tail.trim().isNotEmpty || widgets.isEmpty) {
+      widgets.add(_buildInlineMathText(tail, textStyle));
+    }
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: widgets,
+    );
+  }
+
+  Widget _buildInlineMathText(String text, TextStyle textStyle) {
+    final inlineRegex = RegExp(r'\$([^\$]+)\$');
+    final spans = <InlineSpan>[];
+    var cursor = 0;
+
+    for (final match in inlineRegex.allMatches(text)) {
+      if (match.start > cursor) {
+        spans.add(TextSpan(text: text.substring(cursor, match.start)));
+      }
+
+      final expression = (match.group(1) ?? '').trim();
+      if (expression.isNotEmpty) {
+        spans.add(
+          WidgetSpan(
+            alignment: PlaceholderAlignment.middle,
+            child: Math.tex(
+              expression,
+              textStyle: textStyle,
+              onErrorFallback: (error) => Text(expression, style: textStyle),
+            ),
+          ),
+        );
+      }
+      cursor = match.end;
+    }
+
+    if (cursor < text.length) {
+      spans.add(TextSpan(text: text.substring(cursor)));
+    }
+
+    return RichText(
+      text: TextSpan(style: textStyle, children: spans),
     );
   }
 

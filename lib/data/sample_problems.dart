@@ -2,10 +2,10 @@ import 'package:hci_final_project/models/quiz_problem.dart';
 
 final List<QuizProblem> sampleProblems = [
   QuizProblem(
-    question: "Solve for x: x + 2 = 5",
+    question: "Solve for \$x\$: \$x+2=5\$",
     type: QuestionType.dragAndDrop,
-    options: ["x + 2 = 5", "3x - 4 = 8", "2x + 1 = 7"],
-    answer: "x + 2 = 5",
+    options: ["\$x+2=5\$", "\$3x-4=8\$", "\$2x+1=7\$"],
+    answer: "\$x+2=5\$",
     hint: "Isolate x by subtracting 2 from both sides.",
   ),
   QuizProblem(
@@ -16,26 +16,26 @@ final List<QuizProblem> sampleProblems = [
     hint: "Add the two integers directly.",
   ),
   QuizProblem(
-    question: "What is 5 × 3?",
+    question: "What is \$5\\times3\$?",
     type: QuestionType.typing,
-    answer: "15",
+    answer: "\$15\$",
     hint: "Think of 5 groups of 3.",
   ),
   QuizProblem(
     question: "Select the correct formula for area of a rectangle",
     type: QuestionType.dragAndDrop,
-    options: ["A = l × w", "A = 2 × (l + w)", "A = l²"],
-    answer: "A = l × w",
+    options: ["\$A=l\\times w\$", "\$A=2(l+w)\$", "\$A=l^2\$"],
+    answer: "\$A=l\\times w\$",
     hint: "Area uses length times width, not perimeter.",
   ),
 ];
 
 final List<QuizProblem> linearAlgebra = [
   QuizProblem(
-    question: "Solve for x: x + 2 = 5",
+    question: "Solve for \$x\$: \$x+2=5\$",
     type: QuestionType.dragAndDrop,
-    options: ["x = 3", "x = 5", "x = 7"],
-    answer: "x = 3",
+    options: ["\$x=3\$", "\$x=5\$", "\$x=7\$"],
+    answer: "\$x=3\$",
     hint: "Move +2 to the other side by subtraction.",
   ),
   QuizProblem(
@@ -46,16 +46,16 @@ final List<QuizProblem> linearAlgebra = [
     hint: "This is basic addition.",
   ),
   QuizProblem(
-    question: "What is 5 × 3?",
+    question: "What is \$5\\times3\$?",
     type: QuestionType.typing,
-    answer: "15",
+    answer: "\$15\$",
     hint: "Repeated addition: 5 + 5 + 5.",
   ),
   QuizProblem(
     question: "Select the correct formula for area of a rectangle",
     type: QuestionType.dragAndDrop,
-    options: ["A = l × w", "A = 2 × (l + w)", "A = l²"],
-    answer: "A = l × w",
+    options: ["\$A=l\\times w\$", "\$A=2(l+w)\$", "\$A=l^2\$"],
+    answer: "\$A=l\\times w\$",
     hint: "Rectangle area depends on two side lengths multiplied.",
   ),
 ];

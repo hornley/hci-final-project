@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../models/quiz_problem.dart';
+import 'math_text.dart';
 
 class TypingQuestion extends StatefulWidget {
   final QuizProblem problem;
@@ -37,8 +38,9 @@ class _TypingQuestionState extends State<TypingQuestion> {
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
-        Text(
+        MathText(
           widget.problem.question,
+          textAlign: TextAlign.center,
           style: TextStyle(
             fontSize: 20,
             fontWeight: FontWeight.w600,
@@ -83,10 +85,7 @@ class _TypingQuestionState extends State<TypingQuestion> {
           ),
           child: Text(
             "Submit",
-            style: TextStyle(
-              fontSize: 18,
-              color: Colors.white,
-            ),
+            style: TextStyle(fontSize: 18, color: Colors.white),
           ),
         ),
       ],

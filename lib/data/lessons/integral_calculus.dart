@@ -9,7 +9,7 @@ final integrationBasicsLesson = Lesson(
     LessonSection(
       content: """
       Integration is the reverse process of differentiation. 
-      The indefinite integral of a function f(x) is F(x) + C, where F'(x) = f(x) and C is the constant of integration.
+      The indefinite integral of a function \$f(x)\$ is \$F(x) + C\$, where \$F'(x)=f(x)\$ and \$C\$ is the constant of integration.
       """,
       interactions: [
         LessonInteraction(
@@ -32,7 +32,7 @@ final integrationBasicsLesson = Lesson(
     ),
     LessonSection(
       content: """
-      Notation: ∫ f(x) dx represents the integral of f(x) with respect to x.
+      Notation: \$\$\\int f(x)\\,dx\$\$ represents the integral of \$f(x)\$ with respect to \$x\$.
       """,
       interactions: [
         LessonInteraction(
@@ -57,9 +57,9 @@ final integrationBasicsLesson = Lesson(
   ],
   quizProblems: [
     QuizProblem(
-      question: "Find the indefinite integral of f(x) = 2x.",
+      question: "Find the indefinite integral of \$f(x)=2x\$.",
       type: QuestionType.typing,
-      answer: "x^2 + C",
+      answer: "\$x^2+C\$",
       hint: "Use the power rule for integrals and remember + C.",
     ),
     QuizProblem(
@@ -77,7 +77,7 @@ final definiteIntegralsLesson = Lesson(
   sections: [
     LessonSection(
       content: """
-      A definite integral ∫[a,b] f(x) dx calculates the net area under f(x) from x = a to x = b.
+      A definite integral \$\$\\int_a^b f(x)\\,dx\$\$ calculates the net area under \$f(x)\$ from \$x=a\$ to \$x=b\$.
       It has a numeric value, unlike indefinite integrals.
       """,
       interactions: [
@@ -102,15 +102,15 @@ final definiteIntegralsLesson = Lesson(
     LessonSection(
       content: """
       Fundamental Theorem of Calculus:
-      If F'(x) = f(x), then ∫[a,b] f(x) dx = F(b) - F(a)
+      If \$F'(x)=f(x)\$, then \$\$\\int_a^b f(x)\\,dx = F(b)-F(a)\$\$
       """,
     ),
   ],
   quizProblems: [
     QuizProblem(
-      question: "Compute ∫[0,2] 3x^2 dx",
+      question: "Compute \$\\int_0^2 3x^2\\,dx\$",
       type: QuestionType.typing,
-      answer: "8",
+      answer: "\$8\$",
       hint: "Find an antiderivative first, then evaluate upper minus lower.",
     ),
     QuizProblem(

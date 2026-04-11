@@ -16,9 +16,10 @@ final atomicStructureLesson = Lesson(
   ],
   quizProblems: [
     QuizProblem(
-      question: "An atom has 6 protons and 6 neutrons. Its atomic number is?",
+      question:
+          "An atom has \$6\$ protons and \$6\$ neutrons. Its atomic number is?",
       type: QuestionType.typing,
-      answer: "6",
+      answer: "\$6\$",
       hint: "Atomic number equals the number of protons.",
     ),
     QuizProblem(
@@ -63,10 +64,16 @@ final chemicalBondingLesson = Lesson(
       hint: "Covalent bonding is based on sharing electron pairs.",
     ),
     QuizProblem(
-      question: "Which bond forms between Na and Cl?",
+      question:
+          "Which bond forms between \$\\mathrm{Na}\$ and \$\\mathrm{Cl}\$?",
       type: QuestionType.multipleChoice,
-      options: ["Ionic", "Covalent", "Metallic", "Hydrogen"],
-      answer: "Ionic",
+      options: [
+        "\$\\text{Ionic}\$",
+        "\$\\text{Covalent}\$",
+        "\$\\text{Metallic}\$",
+        "\$\\text{Hydrogen}\$",
+      ],
+      answer: "\$\\text{Ionic}\$",
       hint: "A metal and a nonmetal usually form this bond type.",
     ),
   ],

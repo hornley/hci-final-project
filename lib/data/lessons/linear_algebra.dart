@@ -34,11 +34,11 @@ final vectorLesson = Lesson(
     ),
     LessonSection(
       content:
-          "Vectors are often written in component form like:\n\nv = (x, y)\n\nThis means the vector moves x units horizontally and y units vertically.",
+          "Vectors are often written in component form like:\n\n\$v=(x,y)\$\n\nThis means the vector moves \$x\$ units horizontally and \$y\$ units vertically.",
     ),
     LessonSection(
       content:
-          "Vector addition combines two vectors:\n\n(u + v) = (x1 + x2, y1 + y2)\n\nYou simply add corresponding components.",
+          "Vector addition combines two vectors:\n\n\$u+v=(x_1+x_2,\ y_1+y_2)\$\n\nYou simply add corresponding components.",
       message: "Add x with x, and y with y — that's it!",
       additionalContent: "Example: (2, -1) + (3, 4) = (5, 3).",
       interactions: [
@@ -56,7 +56,7 @@ final vectorLesson = Lesson(
     ),
     LessonSection(
       content:
-          "Scalar multiplication means multiplying a vector by a number:\n\nk·v = (k×x, k×y)\n\nThis changes the length of the vector.",
+          "Scalar multiplication means multiplying a vector by a number:\n\n\$k\\cdot v=(kx,ky)\$\n\nThis changes the length of the vector.",
       message:
           "If k > 1, the vector gets longer. If 0 < k < 1, it gets shorter.",
     ),
@@ -68,10 +68,10 @@ final vectorLesson = Lesson(
   ],
   quizProblems: [
     QuizProblem(
-      question: "Which of the following is a vector in R³?",
+      question: "Which of the following is a vector in \$\\mathbb{R}^3\$?",
       type: QuestionType.multipleChoice,
-      options: ["(1,2,3)", "(1,2)", "3x + 2", "5"],
-      answer: "(1,2,3)",
+      options: ["\$(1,2,3)\$", "\$(1,2)\$", "\$3x+2\$", "\$5\$"],
+      answer: "\$(1,2,3)\$",
       hint: "A vector in R^3 has exactly three components.",
     ),
     QuizProblem(
@@ -88,9 +88,9 @@ final vectorLesson = Lesson(
       hint: "Match x-component first, then y-component.",
     ),
     QuizProblem(
-      question: "Write the vector resulting from 2*(1,3):",
+      question: "Write the vector resulting from \$2(1,3)\$:",
       type: QuestionType.typing,
-      answer: "(2,6)",
+      answer: "\$(2,6)\$",
       hint: "Multiply each component by 2.",
     ),
   ],
@@ -117,15 +117,16 @@ final matrixLesson = Lesson(
     ),
     LessonSection(
       content:
-          "The determinant of a 2x2 matrix A = [[a, b], [c, d]] is det(A) = ad - bc.",
+          "The determinant of a \$2\\times2\$ matrix \$A=\\begin{bmatrix}a & b\\\\ c & d\\end{bmatrix}\$ is \$\\det(A)=ad-bc\$.",
       message: "Determinants help determine if a matrix is invertible.",
     ),
   ],
   quizProblems: [
     QuizProblem(
-      question: "What is the determinant of [[2,3],[1,4]]?",
+      question:
+          "What is the determinant of \$\\begin{bmatrix}2 & 3\\\\1 & 4\\end{bmatrix}\$?",
       type: QuestionType.typing,
-      answer: "5",
+      answer: "\$5\$",
       hint: "For 2x2, use ad - bc.",
     ),
     QuizProblem(
@@ -136,15 +137,15 @@ final matrixLesson = Lesson(
       hint: "Matrix addition is done element by element.",
     ),
     QuizProblem(
-      question: "Which of these is a valid 2x2 matrix?",
+      question: "Which of these is a valid \$2\\times2\$ matrix?",
       type: QuestionType.multipleChoice,
       options: [
-        "[[1,2],[3,4]]",
-        "[1,2,3]",
-        "[[1,2,3],[4,5,6],[7,8,9]]",
-        "[1,2],[3,4]",
+        "\$\\begin{bmatrix}1 & 2\\\\3 & 4\\end{bmatrix}\$",
+        "\$[1,2,3]\$",
+        "\$\\begin{bmatrix}1&2&3\\\\4&5&6\\\\7&8&9\\end{bmatrix}\$",
+        "\$[1,2],[3,4]\$",
       ],
-      answer: "[[1,2],[3,4]]",
+      answer: "\$\\begin{bmatrix}1 & 2\\\\3 & 4\\end{bmatrix}\$",
       hint: "A 2x2 matrix has 2 rows and 2 columns.",
     ),
   ],
@@ -160,8 +161,8 @@ final linearSystemsLesson = Lesson(
       A linear system is a set of equations where each equation is linear in the variables.
 
       Example: 
-      x + y = 3
-      2x - y = 1
+      \$x+y=3\$
+      \$2x-y=1\$
 
       Solutions can be unique, infinite, or none.
       """,
@@ -178,12 +179,12 @@ final linearSystemsLesson = Lesson(
     ),
     LessonSection(
       content: """
-      Representing systems in matrix form: Ax = b, where A is the coefficient matrix, x is the vector of variables, and b is the constants vector.
+      Representing systems in matrix form: \$Ax=b\$, where \$A\$ is the coefficient matrix, \$x\$ is the vector of variables, and \$b\$ is the constants vector.
 
-      If det(A) != 0, the system has a unique solution.
+      If \$\\det(A) \\neq 0\$, the system has a unique solution.
       """,
       additionalContent:
-          "When det(A) = 0, test consistency to know if the system has no solution or infinitely many.",
+          "When \$\\det(A)=0\$, test consistency to know if the system has no solution or infinitely many.",
     ),
   ],
   quizProblems: [
@@ -225,8 +226,8 @@ final determinantsRankLesson = Lesson(
       content: """
       The determinant of a square matrix is a scalar value that can indicate whether the matrix is invertible.
 
-      2x2 matrix: det([[a,b],[c,d]]) = ad - bc
-      3x3 matrix: use expansion by minors.
+      \$2\\times2\$ matrix: \$\\det\\begin{pmatrix}a&b\\\\c&d\\end{pmatrix}=ad-bc\$
+      \$3\\times3\$ matrix: use expansion by minors.
       """,
     ),
     LessonSection(
@@ -262,15 +263,15 @@ final eigenLesson = Lesson(
     LessonSection(
       content: """
       Eigenvectors are vectors that remain in the same direction under a transformation.
-      Eigenvalues are scalars λ satisfying Av = λv.
+      Eigenvalues are scalars \$\\lambda\$ satisfying \$Av=\\lambda v\$.
       """,
       additionalContent:
           "In short, eigenvectors keep their direction while only being scaled.",
     ),
     LessonSection(
       content: """
-      Characteristic equation: det(A - λI) = 0
-      Solutions λ are eigenvalues; corresponding vectors v are eigenvectors.
+      Characteristic equation: \$\\det(A-\\lambda I)=0\$
+      Solutions \$\\lambda\$ are eigenvalues; corresponding vectors \$v\$ are eigenvectors.
       """,
     ),
     LessonSection(
@@ -305,12 +306,12 @@ final orthogonalityLesson = Lesson(
   sections: [
     LessonSection(
       content: """
-      Two vectors u and v are orthogonal if their dot product is zero: u·v = 0.
+      Two vectors \$u\$ and \$v\$ are orthogonal if their dot product is zero: \$u\\cdot v=0\$.
       """,
     ),
     LessonSection(
       content: """
-      Orthogonal projections: project vector u onto v using proj_v(u) = (u·v / v·v) v
+      Orthogonal projections: project vector \$u\$ onto \$v\$ using \$\\mathrm{proj}_v(u)=\\frac{u\\cdot v}{v\\cdot v}v\$
       """,
     ),
     LessonSection(
@@ -343,12 +344,12 @@ final diagonalizationLesson = Lesson(
   sections: [
     LessonSection(
       content: """
-      A matrix A is diagonalizable if there exists an invertible P such that P⁻¹AP = D, where D is diagonal.
+      A matrix \$A\$ is diagonalizable if there exists an invertible \$P\$ such that \$P^{-1}AP=D\$, where \$D\$ is diagonal.
       """,
     ),
     LessonSection(
       content: """
-      Diagonalization simplifies matrix powers: A^k = P D^k P⁻¹
+      Diagonalization simplifies matrix powers: \$A^k=PD^kP^{-1}\$
       """,
     ),
     LessonSection(

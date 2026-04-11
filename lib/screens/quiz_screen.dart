@@ -5,6 +5,7 @@ import '../local_storage.dart';
 import '../progress_manager.dart';
 import '../quest_manager.dart';
 import '../widgets/drag_drop.dart';
+import '../widgets/math_text.dart';
 import '../widgets/multiple_choice.dart';
 import '../widgets/true_or_false.dart';
 import '../widgets/typing.dart';
@@ -227,6 +228,23 @@ class _QuizResultsScreenState extends State<QuizResultsScreen> {
   int _quizCoinReward = 0;
   bool _isRetakeWithoutRewards = false;
 
+  String _normalizeAnswer(String input) {
+    var value = input.trim().toLowerCase();
+    value = value.replaceAll(r'$', '');
+    value = value.replaceAllMapped(
+      RegExp(r'\\(?:text|mathrm)\{([^}]*)\}'),
+      (match) => match.group(1) ?? '',
+    );
+    value = value.replaceAll(RegExp(r'\\(?:left|right)'), '');
+    value = value.replaceAll(RegExp(r'[{}\\,]'), '');
+    value = value.replaceAll(RegExp(r'\s+'), '');
+    return value;
+  }
+
+  bool _answersMatch(String userAnswer, String expectedAnswer) {
+    return _normalizeAnswer(userAnswer) == _normalizeAnswer(expectedAnswer);
+  }
+
   @override
   void initState() {
     super.initState();
@@ -241,7 +259,7 @@ class _QuizResultsScreenState extends State<QuizResultsScreen> {
       if (index < 0 || index >= widget.problems.length) {
         return false;
       }
-      return answer == widget.problems[index].answer;
+      return _answersMatch(answer, widget.problems[index].answer);
     }).length;
 
     await ProgressManager.recordQuizCompletion(
@@ -360,7 +378,7 @@ class _QuizResultsScreenState extends State<QuizResultsScreen> {
               itemBuilder: (context, index) {
                 final problem = widget.problems[index];
                 final userAnswer = widget.answers[index] ?? "No answer";
-                final correct = userAnswer == problem.answer;
+                final correct = _answersMatch(userAnswer, problem.answer);
 
                 return Card(
                   margin: const EdgeInsets.only(bottom: 12),
@@ -369,7 +387,7 @@ class _QuizResultsScreenState extends State<QuizResultsScreen> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(
+                        MathText(
                           "Q${index + 1}: ${problem.question}",
                           style: TextStyle(
                             fontSize: 16,
@@ -378,7 +396,7 @@ class _QuizResultsScreenState extends State<QuizResultsScreen> {
                           ),
                         ),
                         const SizedBox(height: 6),
-                        Text(
+                        MathText(
                           "Your answer: $userAnswer",
                           style: TextStyle(
                             color: Theme.of(
@@ -386,7 +404,7 @@ class _QuizResultsScreenState extends State<QuizResultsScreen> {
                             ).colorScheme.onSurface.withValues(alpha: 0.8),
                           ),
                         ),
-                        Text(
+                        MathText(
                           "Correct answer: ${problem.answer}",
                           style: TextStyle(
                             color: Theme.of(

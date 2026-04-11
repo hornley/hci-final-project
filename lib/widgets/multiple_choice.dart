@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../models/quiz_problem.dart';
+import 'math_text.dart';
 
 class MultipleChoiceQuestion extends StatelessWidget {
   final QuizProblem problem;
@@ -18,8 +19,9 @@ class MultipleChoiceQuestion extends StatelessWidget {
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
-        Text(
+        MathText(
           problem.question,
+          textAlign: TextAlign.center,
           style: TextStyle(
             fontSize: 20,
             fontWeight: FontWeight.w600,
@@ -38,8 +40,9 @@ class MultipleChoiceQuestion extends StatelessWidget {
                     ? Theme.of(context).colorScheme.primary
                     : Theme.of(context).colorScheme.surfaceVariant,
               ),
-              child: Text(
+              child: MathText(
                 option,
+                textAlign: TextAlign.center,
                 style: TextStyle(
                   fontSize: 18,
                   color: selectedAnswer == option

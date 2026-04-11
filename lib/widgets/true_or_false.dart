@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../models/quiz_problem.dart';
+import 'math_text.dart';
 
 class TrueFalseQuestion extends StatelessWidget {
   final QuizProblem problem;
@@ -18,8 +19,9 @@ class TrueFalseQuestion extends StatelessWidget {
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
-        Text(
+        MathText(
           problem.question,
+          textAlign: TextAlign.center,
           style: TextStyle(
             fontSize: 20,
             fontWeight: FontWeight.w600,

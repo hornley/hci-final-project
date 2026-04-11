@@ -36,9 +36,10 @@ final mechanicsLesson = Lesson(
   ],
   quizProblems: [
     QuizProblem(
-      question: "Compute the force for mass = 2kg, acceleration = 3 m/s²",
+      question:
+          "Compute the force for \$m=2\,\\mathrm{kg}\$, \$a=3\,\\mathrm{m/s^2}\$.",
       type: QuestionType.typing,
-      answer: "6",
+      answer: "\$6\$",
       hint: "Use Newton's second law: F = m * a.",
     ),
     QuizProblem(
@@ -64,9 +65,10 @@ final energyLesson = Lesson(
   ],
   quizProblems: [
     QuizProblem(
-      question: "A 5kg object moves at 4 m/s. Find its kinetic energy.",
+      question:
+          "A \$5\,\\mathrm{kg}\$ object moves at \$4\,\\mathrm{m/s}\$. Find its kinetic energy.",
       type: QuestionType.typing,
-      answer: "40",
+      answer: "\$40\$",
       hint: "Apply KE = 1/2 * m * v^2.",
     ),
     QuizProblem(
