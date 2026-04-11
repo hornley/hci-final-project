@@ -170,7 +170,9 @@ class _LessonDetailBodyState extends State<LessonDetailBody> {
     final buttonBackground = isDark ? primary : (themeColor ?? primary);
     final buttonForeground = isDark
         ? Colors.white
-        : Theme.of(context).colorScheme.onPrimary;
+        : (buttonBackground.computeLuminance() > 0.7
+              ? Colors.black87
+              : Colors.white);
     final outlineForeground = isDark
         ? Colors.white
         : Theme.of(context).colorScheme.onSurface;

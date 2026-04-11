@@ -11,11 +11,48 @@ final integrationBasicsLesson = Lesson(
       Integration is the reverse process of differentiation. 
       The indefinite integral of a function f(x) is F(x) + C, where F'(x) = f(x) and C is the constant of integration.
       """,
+      interactions: [
+        LessonInteraction(
+          type: LessonInteractionType.sliderExperiment,
+          title: "Power Rule Explorer",
+          prompt:
+              "Move n and observe how integrating x^n changes to x^(n+1)/(n+1).",
+          valueLabel: "Exponent n",
+          minValue: 0,
+          maxValue: 6,
+          initialValue: 1,
+          targetMin: 2,
+          targetMax: 4,
+          outputLabel: "New exponent after integration",
+          outputMultiplier: 1,
+          revealOnComplete:
+              "Great. Integration raises the exponent by 1 and divides by the new exponent.",
+        ),
+      ],
     ),
     LessonSection(
       content: """
       Notation: ∫ f(x) dx represents the integral of f(x) with respect to x.
       """,
+      interactions: [
+        LessonInteraction(
+          type: LessonInteractionType.chartExperiment,
+          title: "Area Accumulator",
+          prompt:
+              "Adjust x and watch how accumulated area grows for a simple positive function.",
+          valueLabel: "Upper bound x",
+          valueUnit: "",
+          minValue: 0,
+          maxValue: 5,
+          initialValue: 1,
+          outputLabel: "Accumulated area (relative)",
+          outputMultiplier: 1.5,
+          targetMin: 2,
+          targetMax: 4,
+          revealOnComplete:
+              "Nice observation. As the bound increases, total accumulated area increases too.",
+        ),
+      ],
     ),
   ],
   quizProblems: [
@@ -43,6 +80,24 @@ final definiteIntegralsLesson = Lesson(
       A definite integral ∫[a,b] f(x) dx calculates the net area under f(x) from x = a to x = b.
       It has a numeric value, unlike indefinite integrals.
       """,
+      interactions: [
+        LessonInteraction(
+          type: LessonInteractionType.sliderExperiment,
+          title: "Bound Sensitivity",
+          prompt:
+              "Move the upper bound b and inspect how the definite integral value changes.",
+          valueLabel: "Upper bound b",
+          minValue: 0,
+          maxValue: 6,
+          initialValue: 2,
+          targetMin: 3,
+          targetMax: 5,
+          outputLabel: "Relative integral value",
+          outputMultiplier: 2,
+          revealOnComplete:
+              "Exactly. Definite integrals return one numeric value for chosen bounds.",
+        ),
+      ],
     ),
     LessonSection(
       content: """
