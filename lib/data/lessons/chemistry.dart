@@ -40,6 +40,19 @@ final chemicalBondingLesson = Lesson(
       Covalent bond: sharing of electrons (nonmetal + nonmetal)
       Metallic bond: electrons delocalized in a metal lattice
       """,
+      interactions: [
+        LessonInteraction(
+          type: LessonInteractionType.toggleChoiceExperiment,
+          title: "Bond Predictor",
+          prompt:
+              "Enable the Na + Cl scenario, then choose the likely bond type.",
+          toggleLabel: "Activate metal + nonmetal case (Na + Cl)",
+          options: ["Ionic", "Covalent", "Metallic"],
+          correctOption: "Ionic",
+          revealOnComplete:
+              "Correct. Na and Cl form an ionic bond through electron transfer.",
+        ),
+      ],
     ),
   ],
   quizProblems: [

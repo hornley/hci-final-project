@@ -13,6 +13,24 @@ final vectorLesson = Lesson(
       contentImageOrient: ContentImageOrient.right,
       additionalContent:
           "Quick check: if direction changes, it is not the same vector even when magnitude is equal.",
+      interactions: [
+        LessonInteraction(
+          type: LessonInteractionType.sliderExperiment,
+          title: "Scale A Vector",
+          prompt: "Move the scalar k to stretch or shrink vector magnitude.",
+          valueLabel: "Scalar k",
+          valueUnit: "x",
+          minValue: 0,
+          maxValue: 4,
+          initialValue: 1,
+          targetMin: 2,
+          targetMax: 3,
+          outputLabel: "Magnitude multiplier",
+          outputMultiplier: 1,
+          revealOnComplete:
+              "Nice experiment. Increasing k above 1 scales the vector while preserving direction.",
+        ),
+      ],
     ),
     LessonSection(
       content:
@@ -23,6 +41,18 @@ final vectorLesson = Lesson(
           "Vector addition combines two vectors:\n\n(u + v) = (x1 + x2, y1 + y2)\n\nYou simply add corresponding components.",
       message: "Add x with x, and y with y — that's it!",
       additionalContent: "Example: (2, -1) + (3, 4) = (5, 3).",
+      interactions: [
+        LessonInteraction(
+          type: LessonInteractionType.dragArrangement,
+          title: "Arrange The Component Rule",
+          prompt:
+              "Drag terms into order so the resulting vector reads (x1 + x2, y1 + y2).",
+          draggableOptions: ["y1 + y2", "x1 + x2"],
+          expectedOrder: ["x1 + x2", "y1 + y2"],
+          revealOnComplete:
+              "Correct. Vector addition is component-wise: x-components together, y-components together.",
+        ),
+      ],
     ),
     LessonSection(
       content:

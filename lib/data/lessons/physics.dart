@@ -13,6 +13,25 @@ final mechanicsLesson = Lesson(
       2. F = ma, force equals mass times acceleration.
       3. For every action, there is an equal and opposite reaction.
       """,
+      interactions: [
+        LessonInteraction(
+          type: LessonInteractionType.chartExperiment,
+          title: "Force Experiment",
+          prompt:
+              "Adjust acceleration and observe how force changes for a 2kg object.",
+          valueLabel: "Acceleration",
+          valueUnit: " m/s²",
+          minValue: 0,
+          maxValue: 10,
+          initialValue: 1,
+          outputLabel: "Force (N)",
+          outputMultiplier: 2,
+          targetMin: 3,
+          targetMax: 6,
+          revealOnComplete:
+              "Great. You just observed the linear relationship in F = ma.",
+        ),
+      ],
     ),
   ],
   quizProblems: [

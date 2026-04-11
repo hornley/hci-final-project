@@ -62,6 +62,7 @@ class _LessonDetailBodyState extends State<LessonDetailBody> {
   int _visibleSectionCount = 1;
   final ScrollController _scrollController = ScrollController();
   late List<GlobalKey> _sectionKeys;
+  final Map<int, bool> _sectionInteractionReady = {};
 
   @override
   void initState() {
@@ -80,6 +81,7 @@ class _LessonDetailBodyState extends State<LessonDetailBody> {
     super.didUpdateWidget(oldWidget);
     if (oldWidget.lesson.title != widget.lesson.title) {
       _visibleSectionCount = 1;
+      _sectionInteractionReady.clear();
       _sectionKeys = List.generate(
         widget.lesson.sections.length,
         (_) => GlobalKey(),
@@ -98,6 +100,26 @@ class _LessonDetailBodyState extends State<LessonDetailBody> {
 
   bool get _hasMoreSections =>
       _visibleSectionCount < widget.lesson.sections.length;
+
+  bool _sectionRequiresInteraction(int index) {
+    final interactions = widget.lesson.sections[index].interactions;
+    return interactions != null && interactions.isNotEmpty;
+  }
+
+  bool _isSectionReady(int index) {
+    if (!_sectionRequiresInteraction(index)) {
+      return true;
+    }
+    return _sectionInteractionReady[index] ?? false;
+  }
+
+  bool get _canContinueFromCurrentSection {
+    final currentIndex = _visibleSectionCount - 1;
+    if (currentIndex < 0 || currentIndex >= widget.lesson.sections.length) {
+      return true;
+    }
+    return _isSectionReady(currentIndex);
+  }
 
   Future<void> _markLessonReadIfComplete() async {
     if (_visibleSectionCount >= widget.lesson.sections.length) {
@@ -183,22 +205,48 @@ class _LessonDetailBodyState extends State<LessonDetailBody> {
                         _LessonSectionCard(
                           key: _sectionKeys[index],
                           section: widget.lesson.sections[index],
+                          onInteractionReadyChanged: (isReady) {
+                            if (!mounted) {
+                              return;
+                            }
+                            setState(() {
+                              _sectionInteractionReady[index] = isReady;
+                            });
+                          },
                         ),
                         const SizedBox(height: 14),
                       ],
                       if (_hasMoreSections)
-                        SizedBox(
-                          width: double.infinity,
-                          child: ElevatedButton(
-                            onPressed: _continueSection,
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: buttonBackground,
-                              foregroundColor: buttonForeground,
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            SizedBox(
+                              width: double.infinity,
+                              child: ElevatedButton(
+                                onPressed: _canContinueFromCurrentSection
+                                    ? _continueSection
+                                    : null,
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: buttonBackground,
+                                  foregroundColor: buttonForeground,
+                                ),
+                                child: Text(
+                                  'Continue ($_visibleSectionCount/${widget.lesson.sections.length})',
+                                ),
+                              ),
                             ),
-                            child: Text(
-                              'Continue ($_visibleSectionCount/${widget.lesson.sections.length})',
-                            ),
-                          ),
+                            if (!_canContinueFromCurrentSection) ...[
+                              const SizedBox(height: 8),
+                              Text(
+                                'Complete the interactive activity above to unlock the next section.',
+                                style: GoogleFonts.inter(
+                                  fontSize: 12,
+                                  color: Theme.of(context).colorScheme.onSurface
+                                      .withValues(alpha: 0.75),
+                                ),
+                              ),
+                            ],
+                          ],
                         )
                       else
                         Column(
@@ -261,10 +309,75 @@ class _LessonDetailBodyState extends State<LessonDetailBody> {
   }
 }
 
-class _LessonSectionCard extends StatelessWidget {
+class _LessonSectionCard extends StatefulWidget {
   final LessonSection section;
+  final ValueChanged<bool>? onInteractionReadyChanged;
 
-  const _LessonSectionCard({super.key, required this.section});
+  const _LessonSectionCard({
+    super.key,
+    required this.section,
+    this.onInteractionReadyChanged,
+  });
+
+  @override
+  State<_LessonSectionCard> createState() => _LessonSectionCardState();
+}
+
+class _LessonSectionCardState extends State<_LessonSectionCard> {
+  late List<bool> _interactionCompletion;
+
+  @override
+  void initState() {
+    super.initState();
+    _resetInteractionCompletion();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _notifyInteractionReady();
+    });
+  }
+
+  @override
+  void didUpdateWidget(covariant _LessonSectionCard oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.section != widget.section) {
+      _resetInteractionCompletion();
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        _notifyInteractionReady();
+      });
+    }
+  }
+
+  void _resetInteractionCompletion() {
+    final count = widget.section.interactions?.length ?? 0;
+    _interactionCompletion = List<bool>.filled(count, false);
+  }
+
+  void _notifyInteractionReady() {
+    final interactions = widget.section.interactions;
+    if (interactions == null || interactions.isEmpty) {
+      widget.onInteractionReadyChanged?.call(true);
+      return;
+    }
+
+    var isReady = true;
+    for (var i = 0; i < interactions.length; i++) {
+      if (interactions[i].requireForContinue && !_interactionCompletion[i]) {
+        isReady = false;
+        break;
+      }
+    }
+    widget.onInteractionReadyChanged?.call(isReady);
+  }
+
+  void _setInteractionCompletion(int index, bool isComplete) {
+    if (_interactionCompletion[index] == isComplete) {
+      return;
+    }
+
+    setState(() {
+      _interactionCompletion[index] = isComplete;
+    });
+    _notifyInteractionReady();
+  }
 
   Widget _buildContentText(BuildContext context, String text) {
     return Text(
@@ -286,26 +399,28 @@ class _LessonSectionCard extends StatelessWidget {
         ? 480.0
         : 560.0;
 
-    final imageWidget = section.imagePath == null
+    final imageWidget = widget.section.imagePath == null
         ? null
         : ConstrainedBox(
             constraints: BoxConstraints(maxWidth: imageMaxWidth),
             child: Image.asset(
-              section.imagePath!,
+              widget.section.imagePath!,
               width: double.infinity,
               fit: BoxFit.contain,
             ),
           );
 
-    final contentWidget = _buildContentText(context, section.content);
+    final contentWidget = _buildContentText(context, widget.section.content);
 
     final useSideBySide =
-        !isCompact && imageWidget != null && section.contentImageOrient != null;
+        !isCompact &&
+        imageWidget != null &&
+        widget.section.contentImageOrient != null;
 
     Widget buildMainContentBlock() {
       if (useSideBySide) {
         final isContentLeft =
-            section.contentImageOrient == ContentImageOrient.left;
+            widget.section.contentImageOrient == ContentImageOrient.left;
         final left = isContentLeft
             ? Expanded(child: contentWidget)
             : Expanded(child: imageWidget);
@@ -344,7 +459,7 @@ class _LessonSectionCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          if (section.message != null) ...[
+          if (widget.section.message != null) ...[
             Container(
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
@@ -352,7 +467,7 @@ class _LessonSectionCard extends StatelessWidget {
                 borderRadius: BorderRadius.circular(8),
               ),
               child: Text(
-                section.message!,
+                widget.section.message!,
                 style: GoogleFonts.inter(
                   fontStyle: FontStyle.italic,
                   color: Theme.of(context).colorScheme.onSurface,
@@ -362,9 +477,397 @@ class _LessonSectionCard extends StatelessWidget {
             const SizedBox(height: 14),
           ],
           buildMainContentBlock(),
-          if (section.additionalContent != null) ...[
+          if (widget.section.additionalContent != null) ...[
             const SizedBox(height: 12),
-            _buildContentText(context, section.additionalContent!),
+            _buildContentText(context, widget.section.additionalContent!),
+          ],
+          if (widget.section.interactions != null &&
+              widget.section.interactions!.isNotEmpty) ...[
+            const SizedBox(height: 14),
+            for (var i = 0; i < widget.section.interactions!.length; i++) ...[
+              _LessonInteractionCard(
+                interaction: widget.section.interactions![i],
+                onCompletionChanged: (isComplete) {
+                  _setInteractionCompletion(i, isComplete);
+                },
+              ),
+              if (i < widget.section.interactions!.length - 1)
+                const SizedBox(height: 10),
+            ],
+          ],
+        ],
+      ),
+    );
+  }
+}
+
+class _LessonInteractionCard extends StatefulWidget {
+  final LessonInteraction interaction;
+  final ValueChanged<bool> onCompletionChanged;
+
+  const _LessonInteractionCard({
+    required this.interaction,
+    required this.onCompletionChanged,
+  });
+
+  @override
+  State<_LessonInteractionCard> createState() => _LessonInteractionCardState();
+}
+
+class _LessonInteractionCardState extends State<_LessonInteractionCard> {
+  late double _value;
+  late double _chartInput;
+  bool _toggleOn = false;
+  String? _selectedOption;
+  late List<String?> _dragPlaced;
+
+  @override
+  void initState() {
+    super.initState();
+    final interaction = widget.interaction;
+    _value = interaction.initialValue;
+    _chartInput = interaction.initialValue;
+    _dragPlaced = List<String?>.filled(
+      interaction.expectedOrder?.length ?? 0,
+      null,
+    );
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _notifyCompletion();
+    });
+  }
+
+  bool get _isComplete {
+    final interaction = widget.interaction;
+
+    switch (interaction.type) {
+      case LessonInteractionType.sliderExperiment:
+      case LessonInteractionType.chartExperiment:
+        final min = interaction.targetMin;
+        final max = interaction.targetMax;
+        if (min != null && max != null) {
+          final current =
+              interaction.type == LessonInteractionType.chartExperiment
+              ? _chartInput
+              : _value;
+          return current >= min && current <= max;
+        }
+        final baseline = interaction.initialValue;
+        final current =
+            interaction.type == LessonInteractionType.chartExperiment
+            ? _chartInput
+            : _value;
+        return (current - baseline).abs() >= 0.5;
+      case LessonInteractionType.dragArrangement:
+        final expected = interaction.expectedOrder;
+        if (expected == null || expected.isEmpty) {
+          return true;
+        }
+        if (_dragPlaced.any((item) => item == null)) {
+          return false;
+        }
+        for (var i = 0; i < expected.length; i++) {
+          if (_dragPlaced[i] != expected[i]) {
+            return false;
+          }
+        }
+        return true;
+      case LessonInteractionType.toggleChoiceExperiment:
+        return _toggleOn &&
+            widget.interaction.correctOption != null &&
+            _selectedOption == widget.interaction.correctOption;
+    }
+  }
+
+  void _notifyCompletion() {
+    widget.onCompletionChanged(_isComplete);
+  }
+
+  Widget _buildHeader(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          widget.interaction.title,
+          style: GoogleFonts.poppins(
+            fontSize: 14,
+            fontWeight: FontWeight.w700,
+            color: Theme.of(context).colorScheme.onSurface,
+          ),
+        ),
+        const SizedBox(height: 4),
+        Text(
+          widget.interaction.prompt,
+          style: GoogleFonts.inter(
+            fontSize: 13,
+            color: Theme.of(
+              context,
+            ).colorScheme.onSurface.withValues(alpha: 0.82),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildSliderExperiment(BuildContext context) {
+    final valueLabel = widget.interaction.valueLabel ?? 'Value';
+    final unit = widget.interaction.valueUnit ?? '';
+    final outputLabel = widget.interaction.outputLabel;
+    final output = _value * widget.interaction.outputMultiplier;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          '$valueLabel: ${_value.toStringAsFixed(1)}$unit',
+          style: GoogleFonts.inter(fontSize: 13),
+        ),
+        Slider(
+          value: _value,
+          min: widget.interaction.minValue,
+          max: widget.interaction.maxValue,
+          onChanged: (newValue) {
+            setState(() {
+              _value = newValue;
+            });
+            _notifyCompletion();
+          },
+        ),
+        if (outputLabel != null)
+          Text(
+            '$outputLabel: ${output.toStringAsFixed(2)}',
+            style: GoogleFonts.inter(
+              fontSize: 12,
+              color: Theme.of(
+                context,
+              ).colorScheme.onSurface.withValues(alpha: 0.72),
+            ),
+          ),
+      ],
+    );
+  }
+
+  Widget _buildChartExperiment(BuildContext context) {
+    final output = _chartInput * widget.interaction.outputMultiplier;
+    final normalized =
+        (output /
+                (widget.interaction.maxValue *
+                    widget.interaction.outputMultiplier))
+            .clamp(0.0, 1.0);
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          '${widget.interaction.valueLabel ?? 'Input'}: ${_chartInput.toStringAsFixed(1)}${widget.interaction.valueUnit ?? ''}',
+          style: GoogleFonts.inter(fontSize: 13),
+        ),
+        Slider(
+          value: _chartInput,
+          min: widget.interaction.minValue,
+          max: widget.interaction.maxValue,
+          onChanged: (newValue) {
+            setState(() {
+              _chartInput = newValue;
+            });
+            _notifyCompletion();
+          },
+        ),
+        const SizedBox(height: 6),
+        ClipRRect(
+          borderRadius: BorderRadius.circular(8),
+          child: LinearProgressIndicator(
+            value: normalized,
+            minHeight: 12,
+            backgroundColor: Theme.of(
+              context,
+            ).colorScheme.onSurface.withValues(alpha: 0.12),
+          ),
+        ),
+        const SizedBox(height: 6),
+        Text(
+          '${widget.interaction.outputLabel ?? 'Output'}: ${output.toStringAsFixed(2)}',
+          style: GoogleFonts.inter(
+            fontSize: 12,
+            color: Theme.of(
+              context,
+            ).colorScheme.onSurface.withValues(alpha: 0.72),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildToggleChoiceExperiment(BuildContext context) {
+    final options = widget.interaction.options ?? const <String>[];
+    final correctOption = widget.interaction.correctOption;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        SwitchListTile(
+          contentPadding: EdgeInsets.zero,
+          value: _toggleOn,
+          title: Text(widget.interaction.toggleLabel ?? 'Enable scenario'),
+          onChanged: (enabled) {
+            setState(() {
+              _toggleOn = enabled;
+            });
+            _notifyCompletion();
+          },
+        ),
+        for (final option in options)
+          RadioListTile<String>(
+            dense: true,
+            contentPadding: EdgeInsets.zero,
+            value: option,
+            groupValue: _selectedOption,
+            title: Text(option, style: GoogleFonts.inter(fontSize: 13)),
+            onChanged: _toggleOn
+                ? (value) {
+                    setState(() {
+                      _selectedOption = value;
+                    });
+                    _notifyCompletion();
+                  }
+                : null,
+          ),
+        if (_selectedOption != null && !_isComplete && correctOption != null)
+          Text(
+            'Try again: think about the bonding rule before continuing.',
+            style: GoogleFonts.inter(
+              fontSize: 12,
+              color: Colors.orange.shade700,
+            ),
+          ),
+      ],
+    );
+  }
+
+  Widget _buildDragArrangement(BuildContext context) {
+    final draggableOptions =
+        widget.interaction.draggableOptions ?? const <String>[];
+    final expectedOrder = widget.interaction.expectedOrder ?? const <String>[];
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Wrap(
+          spacing: 8,
+          runSpacing: 8,
+          children: draggableOptions.map((item) {
+            return Draggable<String>(
+              data: item,
+              feedback: Material(
+                color: Colors.transparent,
+                child: Chip(label: Text(item)),
+              ),
+              childWhenDragging: Chip(
+                label: Text(
+                  item,
+                  style: TextStyle(
+                    color: Theme.of(
+                      context,
+                    ).colorScheme.onSurface.withValues(alpha: 0.45),
+                  ),
+                ),
+              ),
+              child: Chip(label: Text(item)),
+            );
+          }).toList(),
+        ),
+        const SizedBox(height: 10),
+        for (var i = 0; i < expectedOrder.length; i++) ...[
+          DragTarget<String>(
+            onAcceptWithDetails: (details) {
+              setState(() {
+                _dragPlaced[i] = details.data;
+              });
+              _notifyCompletion();
+            },
+            builder: (context, candidateData, rejectedData) {
+              return Container(
+                width: double.infinity,
+                margin: const EdgeInsets.only(bottom: 8),
+                padding: const EdgeInsets.all(10),
+                decoration: BoxDecoration(
+                  color: Theme.of(
+                    context,
+                  ).colorScheme.surfaceContainerHighest.withValues(alpha: 0.45),
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(
+                    color: Theme.of(
+                      context,
+                    ).colorScheme.outline.withValues(alpha: 0.28),
+                  ),
+                ),
+                child: Text(
+                  _dragPlaced[i] == null
+                      ? 'Drop item for slot ${i + 1}'
+                      : 'Slot ${i + 1}: ${_dragPlaced[i]}',
+                  style: GoogleFonts.inter(fontSize: 13),
+                ),
+              );
+            },
+          ),
+        ],
+        TextButton(
+          onPressed: () {
+            setState(() {
+              _dragPlaced = List<String?>.filled(expectedOrder.length, null);
+            });
+            _notifyCompletion();
+          },
+          child: const Text('Reset arrangement'),
+        ),
+      ],
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final interaction = widget.interaction;
+
+    Widget body;
+    switch (interaction.type) {
+      case LessonInteractionType.sliderExperiment:
+        body = _buildSliderExperiment(context);
+        break;
+      case LessonInteractionType.dragArrangement:
+        body = _buildDragArrangement(context);
+        break;
+      case LessonInteractionType.toggleChoiceExperiment:
+        body = _buildToggleChoiceExperiment(context);
+        break;
+      case LessonInteractionType.chartExperiment:
+        body = _buildChartExperiment(context);
+        break;
+    }
+
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: Theme.of(
+          context,
+        ).colorScheme.surfaceContainerHighest.withValues(alpha: 0.35),
+        borderRadius: BorderRadius.circular(10),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          _buildHeader(context),
+          const SizedBox(height: 8),
+          body,
+          if (_isComplete && interaction.revealOnComplete != null) ...[
+            const SizedBox(height: 8),
+            Text(
+              interaction.revealOnComplete!,
+              style: GoogleFonts.inter(
+                fontSize: 12,
+                color: Theme.of(context).colorScheme.primary,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
           ],
         ],
       ),
