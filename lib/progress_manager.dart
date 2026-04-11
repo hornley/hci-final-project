@@ -88,6 +88,16 @@ class ProgressSnapshot {
   const ProgressSnapshot({required this.subjects, required this.recentQuiz});
 }
 
+class QuizRewardProgress {
+  final bool baseClaimed;
+  final Set<int> rewardedQuestionIndexes;
+
+  const QuizRewardProgress({
+    required this.baseClaimed,
+    required this.rewardedQuestionIndexes,
+  });
+}
+
 class ProgressManager {
   static const _keyPrefix = 'progressData';
   static const _guestUserKey = 'guest';
@@ -128,6 +138,8 @@ class ProgressManager {
         'readLessons': <String>[],
         'completedLessons': <String>[],
         'rewardedQuizLessons': <String>[],
+        'rewardedQuizBaseLessons': <String>[],
+        'rewardedQuizQuestionIndexes': <String, dynamic>{},
         'quizStats': <String, dynamic>{},
         'recentQuizzes': <dynamic>[],
       };
@@ -139,6 +151,14 @@ class ProgressManager {
       'completedLessons': List<String>.from(decoded['completedLessons'] ?? []),
       'rewardedQuizLessons': List<String>.from(
         decoded['rewardedQuizLessons'] ?? [],
+      ),
+      'rewardedQuizBaseLessons': List<String>.from(
+        decoded['rewardedQuizBaseLessons'] ??
+            decoded['rewardedQuizLessons'] ??
+            [],
+      ),
+      'rewardedQuizQuestionIndexes': Map<String, dynamic>.from(
+        decoded['rewardedQuizQuestionIndexes'] ?? {},
       ),
       'quizStats': Map<String, dynamic>.from(decoded['quizStats'] ?? {}),
       'recentQuizzes': List<dynamic>.from(decoded['recentQuizzes'] ?? []),
@@ -215,6 +235,12 @@ class ProgressManager {
       'rewardedQuizLessons': List<String>.from(
         data['rewardedQuizLessons'] as List,
       ),
+      'rewardedQuizBaseLessons': List<String>.from(
+        data['rewardedQuizBaseLessons'] as List,
+      ),
+      'rewardedQuizQuestionIndexes': Map<String, dynamic>.from(
+        data['rewardedQuizQuestionIndexes'] as Map,
+      ),
       'quizStats': quizStats,
       'recentQuizzes': trimmedRecent,
     });
@@ -231,31 +257,93 @@ class ProgressManager {
         'rewardedQuizLessons': List<String>.from(
           data['rewardedQuizLessons'] as List,
         ),
+        'rewardedQuizBaseLessons': List<String>.from(
+          data['rewardedQuizBaseLessons'] as List,
+        ),
+        'rewardedQuizQuestionIndexes': Map<String, dynamic>.from(
+          data['rewardedQuizQuestionIndexes'] as Map,
+        ),
         'quizStats': Map<String, dynamic>.from(data['quizStats'] as Map),
         'recentQuizzes': List<dynamic>.from(data['recentQuizzes'] as List),
       });
     }
+  }
+
+  static Future<QuizRewardProgress> getQuizRewardProgress(
+    String lessonTitle,
+  ) async {
+    final data = await _loadData();
+    final baseClaimedLessons = {
+      ...Set<String>.from(data['rewardedQuizLessons'] as List),
+      ...Set<String>.from(data['rewardedQuizBaseLessons'] as List),
+    };
+
+    final perQuestionRaw = Map<String, dynamic>.from(
+      data['rewardedQuizQuestionIndexes'] as Map,
+    );
+    final rewardedIndexes = Set<int>.from(
+      List<dynamic>.from(
+        perQuestionRaw[lessonTitle] as List? ?? const [],
+      ).map((item) => (item as num).toInt()),
+    );
+
+    return QuizRewardProgress(
+      baseClaimed: baseClaimedLessons.contains(lessonTitle),
+      rewardedQuestionIndexes: rewardedIndexes,
+    );
+  }
+
+  static Future<void> markQuizRewardProgress({
+    required String lessonTitle,
+    bool claimBase = false,
+    Set<int> questionIndexes = const {},
+  }) async {
+    final data = await _loadData();
+
+    final legacyRewarded = Set<String>.from(
+      data['rewardedQuizLessons'] as List,
+    );
+    final baseRewarded = Set<String>.from(
+      data['rewardedQuizBaseLessons'] as List,
+    );
+    final perQuestionRaw = Map<String, dynamic>.from(
+      data['rewardedQuizQuestionIndexes'] as Map,
+    );
+
+    final existingIndexes = Set<int>.from(
+      List<dynamic>.from(
+        perQuestionRaw[lessonTitle] as List? ?? const [],
+      ).map((item) => (item as num).toInt()),
+    );
+
+    if (claimBase) {
+      legacyRewarded.add(lessonTitle);
+      baseRewarded.add(lessonTitle);
+    }
+
+    if (questionIndexes.isNotEmpty) {
+      existingIndexes.addAll(questionIndexes);
+      perQuestionRaw[lessonTitle] = existingIndexes.toList()..sort();
+    }
+
+    await _saveData({
+      'readLessons': List<String>.from(data['readLessons'] as List),
+      'completedLessons': List<String>.from(data['completedLessons'] as List),
+      'rewardedQuizLessons': legacyRewarded.toList(),
+      'rewardedQuizBaseLessons': baseRewarded.toList(),
+      'rewardedQuizQuestionIndexes': perQuestionRaw,
+      'quizStats': Map<String, dynamic>.from(data['quizStats'] as Map),
+      'recentQuizzes': List<dynamic>.from(data['recentQuizzes'] as List),
+    });
   }
 
   static Future<bool> hasClaimedQuizReward(String lessonTitle) async {
-    final data = await _loadData();
-    final rewarded = Set<String>.from(data['rewardedQuizLessons'] as List);
-    return rewarded.contains(lessonTitle);
+    final progress = await getQuizRewardProgress(lessonTitle);
+    return progress.baseClaimed;
   }
 
   static Future<void> markQuizRewardClaimed(String lessonTitle) async {
-    final data = await _loadData();
-    final rewarded = List<String>.from(data['rewardedQuizLessons'] as List);
-    if (!rewarded.contains(lessonTitle)) {
-      rewarded.add(lessonTitle);
-      await _saveData({
-        'readLessons': List<String>.from(data['readLessons'] as List),
-        'completedLessons': List<String>.from(data['completedLessons'] as List),
-        'rewardedQuizLessons': rewarded,
-        'quizStats': Map<String, dynamic>.from(data['quizStats'] as Map),
-        'recentQuizzes': List<dynamic>.from(data['recentQuizzes'] as List),
-      });
-    }
+    await markQuizRewardProgress(lessonTitle: lessonTitle, claimBase: true);
   }
 
   static Future<Map<String, LessonProgressStatus>> getLessonProgressStatuses(
@@ -339,6 +427,8 @@ class ProgressManager {
       'readLessons': <String>[],
       'completedLessons': <String>[],
       'rewardedQuizLessons': <String>[],
+      'rewardedQuizBaseLessons': <String>[],
+      'rewardedQuizQuestionIndexes': <String, dynamic>{},
       'quizStats': <String, dynamic>{},
       'recentQuizzes': <dynamic>[],
     });

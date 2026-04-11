@@ -64,6 +64,7 @@ class _LessonDetailBodyState extends State<LessonDetailBody> {
   final ScrollController _scrollController = ScrollController();
   late List<GlobalKey> _sectionKeys;
   final Map<int, bool> _sectionInteractionReady = {};
+  bool _canSkipToEnd = false;
 
   @override
   void initState() {
@@ -75,6 +76,7 @@ class _LessonDetailBodyState extends State<LessonDetailBody> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _markLessonReadIfComplete();
     });
+    _refreshSkipAvailability();
   }
 
   @override
@@ -90,6 +92,7 @@ class _LessonDetailBodyState extends State<LessonDetailBody> {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         _markLessonReadIfComplete();
       });
+      _refreshSkipAvailability();
     }
   }
 
@@ -126,7 +129,45 @@ class _LessonDetailBodyState extends State<LessonDetailBody> {
     if (_visibleSectionCount >= widget.lesson.sections.length) {
       await ProgressManager.markLessonRead(widget.lesson.title);
       widget.onProgressUpdated?.call();
+      if (!mounted) {
+        return;
+      }
+      setState(() {
+        _canSkipToEnd = true;
+      });
     }
+  }
+
+  Future<void> _refreshSkipAvailability() async {
+    final statuses = await ProgressManager.getLessonProgressStatuses([
+      widget.lesson.title,
+    ]);
+    final status = statuses[widget.lesson.title];
+    if (!mounted) {
+      return;
+    }
+    setState(() {
+      _canSkipToEnd =
+          status?.lessonRead == true || status?.quizCompleted == true;
+    });
+  }
+
+  void _skipToEnd() {
+    setState(() {
+      _visibleSectionCount = widget.lesson.sections.length;
+    });
+    _markLessonReadIfComplete();
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!_scrollController.hasClients) {
+        return;
+      }
+      _scrollController.animateTo(
+        _scrollController.position.maxScrollExtent,
+        duration: const Duration(milliseconds: 280),
+        curve: Curves.easeOut,
+      );
+    });
   }
 
   void _continueSection() {
@@ -223,6 +264,15 @@ class _LessonDetailBodyState extends State<LessonDetailBody> {
                         Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
+                            if (_canSkipToEnd)
+                              Align(
+                                alignment: Alignment.centerRight,
+                                child: TextButton.icon(
+                                  onPressed: _skipToEnd,
+                                  icon: const Icon(Icons.skip_next_rounded),
+                                  label: const Text('Skip to End'),
+                                ),
+                              ),
                             SizedBox(
                               width: double.infinity,
                               child: ElevatedButton(

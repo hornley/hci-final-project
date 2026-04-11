@@ -227,6 +227,7 @@ class _QuizResultsScreenState extends State<QuizResultsScreen> {
   int _quizExpReward = 0;
   int _quizCoinReward = 0;
   bool _isRetakeWithoutRewards = false;
+  final Set<int> _revealedAnswerIndexes = <int>{};
 
   String _normalizeAnswer(String input) {
     var value = input.trim().toLowerCase();
@@ -236,8 +237,23 @@ class _QuizResultsScreenState extends State<QuizResultsScreen> {
       (match) => match.group(1) ?? '',
     );
     value = value.replaceAll(RegExp(r'\\(?:left|right)'), '');
-    value = value.replaceAll(RegExp(r'[{}\\,]'), '');
-    value = value.replaceAll(RegExp(r'\s+'), '');
+
+    final looksMath = RegExp(
+      r'[0-9=+\-*/^_()\[\],]|\\(?:frac|sqrt|int|cdot|times|det|lambda|begin|end)',
+    ).hasMatch(value);
+
+    value = value.replaceAll('−', '-');
+    value = value.replaceAll(r'\times', '*');
+    value = value.replaceAll(r'\cdot', '*');
+    value = value.replaceAll(r'\,', '');
+
+    if (looksMath) {
+      value = value.replaceAll(RegExp(r'[{}\\]'), '');
+      value = value.replaceAll(RegExp(r'\s+'), '');
+      return value;
+    }
+
+    value = value.replaceAll(RegExp(r'\s+'), ' ').trim();
     return value;
   }
 
@@ -253,13 +269,19 @@ class _QuizResultsScreenState extends State<QuizResultsScreen> {
 
   Future<void> _completeRelatedQuests() async {
     final totalQuestions = widget.problems.length;
+    final correctQuestionIndexes = <int>{};
+
     final correctAnswers = widget.answers.entries.where((entry) {
       final index = entry.key;
       final answer = entry.value;
       if (index < 0 || index >= widget.problems.length) {
         return false;
       }
-      return _answersMatch(answer, widget.problems[index].answer);
+      final matches = _answersMatch(answer, widget.problems[index].answer);
+      if (matches) {
+        correctQuestionIndexes.add(index);
+      }
+      return matches;
     }).length;
 
     await ProgressManager.recordQuizCompletion(
@@ -268,42 +290,48 @@ class _QuizResultsScreenState extends State<QuizResultsScreen> {
       totalQuestions: totalQuestions,
     );
 
-    final rewardAlreadyClaimed = await ProgressManager.hasClaimedQuizReward(
+    final rewardProgress = await ProgressManager.getQuizRewardProgress(
       widget.lessonTitle,
     );
-
-    if (rewardAlreadyClaimed) {
-      if (!mounted) return;
-      setState(() {
-        _isRetakeWithoutRewards = true;
-        _rewardResult = null;
-        _quizExpReward = 0;
-        _quizCoinReward = 0;
-      });
-      return;
-    }
+    final newlyRewardedIndexes = correctQuestionIndexes.difference(
+      rewardProgress.rewardedQuestionIndexes,
+    );
+    final shouldClaimBaseReward = !rewardProgress.baseClaimed;
 
     final quizExpReward =
-        _baseQuizExpReward + (correctAnswers * _perCorrectExpReward);
+        (shouldClaimBaseReward ? _baseQuizExpReward : 0) +
+        (newlyRewardedIndexes.length * _perCorrectExpReward);
     final quizCoinReward =
-        _baseQuizCoinReward + (correctAnswers * _perCorrectCoinReward);
+        (shouldClaimBaseReward ? _baseQuizCoinReward : 0) +
+        (newlyRewardedIndexes.length * _perCorrectCoinReward);
 
-    await LocalStorage.addExp(quizExpReward);
-    await LocalStorage.addCoins(quizCoinReward);
+    if (quizExpReward > 0) {
+      await LocalStorage.addExp(quizExpReward);
+    }
+    if (quizCoinReward > 0) {
+      await LocalStorage.addCoins(quizCoinReward);
+    }
 
     final result = await QuestManager.completeQuestsForLesson(
       lessonTitle: widget.lessonTitle,
     );
     if (!mounted) return;
 
-    await ProgressManager.markQuizRewardClaimed(widget.lessonTitle);
+    await ProgressManager.markQuizRewardProgress(
+      lessonTitle: widget.lessonTitle,
+      claimBase: shouldClaimBaseReward,
+      questionIndexes: newlyRewardedIndexes,
+    );
     if (!mounted) return;
 
     setState(() {
       _rewardResult = result;
       _quizExpReward = quizExpReward;
       _quizCoinReward = quizCoinReward;
-      _isRetakeWithoutRewards = false;
+      _isRetakeWithoutRewards =
+          !shouldClaimBaseReward &&
+          newlyRewardedIndexes.isEmpty &&
+          !result.hasRewards;
     });
 
     final questCount = result.completedQuests.length;
@@ -311,11 +339,15 @@ class _QuizResultsScreenState extends State<QuizResultsScreen> {
     final totalExp = quizExpReward + result.totalExpReward;
     final totalCoins = quizCoinReward + result.totalCoinReward;
 
+    final quizRewardMessage =
+        'Quiz reward: +$quizExpReward EXP, +$quizCoinReward coins. '
+        'Newly rewarded questions: ${newlyRewardedIndexes.length}/$totalQuestions.';
+
     final message = result.hasRewards
-        ? 'Quiz reward: +$quizExpReward EXP, +$quizCoinReward coins. '
+        ? '$quizRewardMessage '
               'Completed $questCount $questLabel. '
               '+${result.totalExpReward} EXP, +${result.totalCoinReward} coins.'
-        : 'Quiz reward: +$quizExpReward EXP, +$quizCoinReward coins.';
+        : quizRewardMessage;
 
     final size = MediaQuery.of(context).size;
     ScaffoldMessenger.of(context).showSnackBar(
@@ -379,6 +411,7 @@ class _QuizResultsScreenState extends State<QuizResultsScreen> {
                 final problem = widget.problems[index];
                 final userAnswer = widget.answers[index] ?? "No answer";
                 final correct = _answersMatch(userAnswer, problem.answer);
+                final showAnswer = _revealedAnswerIndexes.contains(index);
 
                 return Card(
                   margin: const EdgeInsets.only(bottom: 12),
@@ -404,14 +437,29 @@ class _QuizResultsScreenState extends State<QuizResultsScreen> {
                             ).colorScheme.onSurface.withValues(alpha: 0.8),
                           ),
                         ),
-                        MathText(
-                          "Correct answer: ${problem.answer}",
-                          style: TextStyle(
-                            color: Theme.of(
-                              context,
-                            ).colorScheme.onSurface.withValues(alpha: 0.8),
+                        TextButton(
+                          onPressed: () {
+                            setState(() {
+                              if (showAnswer) {
+                                _revealedAnswerIndexes.remove(index);
+                              } else {
+                                _revealedAnswerIndexes.add(index);
+                              }
+                            });
+                          },
+                          child: Text(
+                            showAnswer ? 'Hide answer' : 'Show answer',
                           ),
                         ),
+                        if (showAnswer)
+                          MathText(
+                            "Correct answer: ${problem.answer}",
+                            style: TextStyle(
+                              color: Theme.of(
+                                context,
+                              ).colorScheme.onSurface.withValues(alpha: 0.8),
+                            ),
+                          ),
                         Text(
                           "Result: ${correct ? '✅ Correct' : '❌ Incorrect'}",
                           style: TextStyle(
