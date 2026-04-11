@@ -28,7 +28,7 @@ class SubjectProgressData {
     required this.progress,
   });
 
-  String get quizLabel => '$correctAnswers/$totalQuestions';
+  String get quizLabel => '$quizzesTaken';
 }
 
 class QuizCompletionRecord {
@@ -299,7 +299,8 @@ class ProgressManager {
           quizStats[lesson.title] as Map? ?? const {},
         );
         if (stat.isNotEmpty) {
-          quizzesTaken += ((stat['attempts'] as num?)?.toInt() ?? 0);
+          // Count unique lessons attempted, not total retake attempts.
+          quizzesTaken += 1;
           correctTotal += ((stat['bestCorrect'] as num?)?.toInt() ?? 0);
           questionTotal += ((stat['totalQuestions'] as num?)?.toInt() ?? 0);
         }
@@ -308,8 +309,7 @@ class ProgressManager {
       final lessonRatio = totalLessons == 0
           ? 0.0
           : completedCount / totalLessons;
-      final quizRatio = questionTotal == 0 ? 0.0 : correctTotal / questionTotal;
-      final progress = ((lessonRatio + quizRatio) / 2).clamp(0.0, 1.0);
+      final progress = lessonRatio.clamp(0.0, 1.0);
 
       subjects.add(
         SubjectProgressData(

@@ -40,34 +40,54 @@ class _AnimatedAchievementTrophy extends StatelessWidget {
   }
 }
 
-class _SubjectPiePainter extends CustomPainter {
-  final List<SubjectProgressData> subjects;
-  final Map<String, Color> colors;
+class _LessonCompletionPiePainter extends CustomPainter {
+  final int completedLessons;
+  final int totalLessons;
+  final Color completedColor;
+  final Color remainingColor;
+  final Color holeColor;
 
-  _SubjectPiePainter(this.subjects, this.colors);
+  _LessonCompletionPiePainter({
+    required this.completedLessons,
+    required this.totalLessons,
+    required this.completedColor,
+    required this.remainingColor,
+    required this.holeColor,
+  });
 
   @override
   void paint(Canvas canvas, Size size) {
-    final rect = Rect.fromLTWH(0, 0, size.width, size.height);
-    final total = subjects.fold<double>(0, (sum, s) => sum + s.progress);
-
-    if (total <= 0) {
-      final paint = Paint()..color = const Color(0xFFCCD6E4);
-      canvas.drawArc(rect, -math.pi / 2, math.pi * 2, true, paint);
+    if (!size.width.isFinite || !size.height.isFinite) {
+      return;
+    }
+    if (size.width <= 0 || size.height <= 0) {
       return;
     }
 
-    var startAngle = -math.pi / 2;
-    for (final subject in subjects) {
-      final sweep = (subject.progress / total) * math.pi * 2;
-      final paint = Paint()
+    final rect = Rect.fromLTWH(0, 0, size.width, size.height);
+    final safeCompleted = completedLessons.clamp(0, totalLessons);
+    final ratio = totalLessons == 0 ? 0.0 : safeCompleted / totalLessons;
+    final safeRatio = ratio.isFinite ? ratio.clamp(0.0, 1.0) : 0.0;
+
+    final remainingPaint = Paint()
+      ..style = PaintingStyle.fill
+      ..color = remainingColor;
+    canvas.drawArc(rect, -math.pi / 2, math.pi * 2, true, remainingPaint);
+
+    if (safeRatio > 0) {
+      final completedPaint = Paint()
         ..style = PaintingStyle.fill
-        ..color = colors[subject.subjectTitle] ?? const Color(0xFF9AA8BE);
-      canvas.drawArc(rect, startAngle, sweep, true, paint);
-      startAngle += sweep;
+        ..color = completedColor;
+      canvas.drawArc(
+        rect,
+        -math.pi / 2,
+        math.pi * 2 * safeRatio,
+        true,
+        completedPaint,
+      );
     }
 
-    final holePaint = Paint()..color = const Color(0xFFF4F7FC);
+    final holePaint = Paint()..color = holeColor;
     canvas.drawCircle(
       Offset(size.width / 2, size.height / 2),
       size.width * 0.24,
@@ -76,8 +96,12 @@ class _SubjectPiePainter extends CustomPainter {
   }
 
   @override
-  bool shouldRepaint(covariant _SubjectPiePainter oldDelegate) {
-    return oldDelegate.subjects != subjects || oldDelegate.colors != colors;
+  bool shouldRepaint(covariant _LessonCompletionPiePainter oldDelegate) {
+    return oldDelegate.completedLessons != completedLessons ||
+        oldDelegate.totalLessons != totalLessons ||
+        oldDelegate.completedColor != completedColor ||
+        oldDelegate.remainingColor != remainingColor ||
+        oldDelegate.holeColor != holeColor;
   }
 }
 
@@ -133,6 +157,8 @@ class _HomeScreenState extends State<HomeScreen> {
 
   int _selectedAvatar = 0;
   int animationKey = 0;
+  int _subjectCarouselIndex = 0;
+  late final PageController _subjectPageController;
 
   List<String> get avatars =>
       avatarCatalog.map((item) => item.assetPath).toList();
@@ -173,6 +199,10 @@ class _HomeScreenState extends State<HomeScreen> {
       _showShopContent = false;
       _showAboutContent = false;
     });
+
+    if (index == 0) {
+      _resetSubjectCarouselToStart();
+    }
   }
 
   void _navigateFromDrawer({
@@ -194,7 +224,28 @@ class _HomeScreenState extends State<HomeScreen> {
       }
     });
 
+    if (bottomNavIndex == 0 || showHome) {
+      _resetSubjectCarouselToStart();
+    }
+
     Navigator.of(context).pop();
+  }
+
+  void _resetSubjectCarouselToStart() {
+    if (!mounted) {
+      return;
+    }
+
+    setState(() {
+      _subjectCarouselIndex = 0;
+    });
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted || !_subjectPageController.hasClients) {
+        return;
+      }
+      _subjectPageController.jumpToPage(0);
+    });
   }
 
   String _getAppBarTitle() {
@@ -342,7 +393,9 @@ class _HomeScreenState extends State<HomeScreen> {
                                       child: Container(
                                         alignment: Alignment.center,
                                         decoration: BoxDecoration(
-                                          color: Colors.black.withValues(alpha: 0.45),
+                                          color: Colors.black.withValues(
+                                            alpha: 0.45,
+                                          ),
                                           shape: BoxShape.circle,
                                         ),
                                         child: const Icon(
@@ -416,6 +469,7 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   void initState() {
     super.initState();
+    _subjectPageController = PageController(viewportFraction: 0.92);
     _loadSelectedAvatar();
     _maybeShowBottomNavTutorial();
   }
@@ -751,7 +805,10 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   @override
-  void dispose() => super.dispose();
+  void dispose() {
+    _subjectPageController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -990,22 +1047,23 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Widget _buildPerformanceCard(List<SubjectProgressData> subjects) {
-    final hasAnyProgress = subjects.any((s) => s.progress > 0);
-    final chartData = hasAnyProgress
-        ? subjects
-        : subjects
-              .map(
-                (s) => SubjectProgressData(
-                  subjectTitle: s.subjectTitle,
-                  completedLessons: s.completedLessons,
-                  totalLessons: s.totalLessons,
-                  correctAnswers: s.correctAnswers,
-                  totalQuestions: s.totalQuestions,
-                  quizzesTaken: s.quizzesTaken,
-                  progress: 0.25,
-                ),
-              )
-              .toList();
+    if (subjects.isEmpty) {
+      return Container(
+        width: double.infinity,
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: Theme.of(context).colorScheme.surfaceContainerHighest,
+          borderRadius: BorderRadius.circular(16),
+        ),
+        child: Text(
+          'No subjects available yet.',
+          style: GoogleFonts.poppins(
+            fontSize: 14,
+            color: Theme.of(context).colorScheme.onSurface,
+          ),
+        ),
+      );
+    }
 
     return Container(
       width: double.infinity,
@@ -1018,7 +1076,7 @@ class _HomeScreenState extends State<HomeScreen> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            'Subject Performance',
+            'Subject Lesson Completion',
             style: GoogleFonts.poppins(
               fontSize: 16,
               fontWeight: FontWeight.w700,
@@ -1026,56 +1084,181 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
           ),
           const SizedBox(height: 12),
-          Center(
-            child: SizedBox(
-              width: 180,
-              height: 180,
-              child: CustomPaint(
-                painter: _SubjectPiePainter(chartData, _subjectChartColors),
-              ),
+          SizedBox(
+            height: 250,
+            child: Stack(
+              children: [
+                PageView.builder(
+                  controller: _subjectPageController,
+                  itemCount: subjects.length,
+                  onPageChanged: (index) {
+                    setState(() {
+                      _subjectCarouselIndex = index;
+                    });
+                  },
+                  itemBuilder: (context, index) {
+                    final subject = subjects[index];
+                    final subjectColor =
+                        _subjectChartColors[subject.subjectTitle] ??
+                        const Color(0xFF9AA8BE);
+                    final holeColor =
+                        Theme.of(context).brightness == Brightness.dark
+                        ? Theme.of(context).colorScheme.surface
+                        : const Color(0xFFF4F7FC);
+
+                    return Container(
+                      margin: const EdgeInsets.symmetric(horizontal: 4),
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        color: Theme.of(context).colorScheme.surface,
+                        borderRadius: BorderRadius.circular(14),
+                      ),
+                      child: LayoutBuilder(
+                        builder: (context, constraints) {
+                          final pieSize = (constraints.maxHeight * 0.52).clamp(
+                            100.0,
+                            145.0,
+                          );
+
+                          return Column(
+                            crossAxisAlignment: CrossAxisAlignment.center,
+                            children: [
+                              Text(
+                                subject.subjectTitle,
+                                textAlign: TextAlign.center,
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: GoogleFonts.poppins(
+                                  fontSize: 15,
+                                  fontWeight: FontWeight.w700,
+                                  color: Theme.of(
+                                    context,
+                                  ).colorScheme.onSurface,
+                                ),
+                              ),
+                              const SizedBox(height: 4),
+                              Text(
+                                '${subject.completedLessons}/${subject.totalLessons} lessons completed',
+                                textAlign: TextAlign.center,
+                                style: GoogleFonts.poppins(
+                                  fontSize: 12,
+                                  color: Theme.of(context).colorScheme.onSurface
+                                      .withValues(alpha: 0.7),
+                                ),
+                              ),
+                              const SizedBox(height: 8),
+                              Expanded(
+                                child: Center(
+                                  child: SizedBox(
+                                    width: pieSize,
+                                    height: pieSize,
+                                    child: CustomPaint(
+                                      painter: _LessonCompletionPiePainter(
+                                        completedLessons:
+                                            subject.completedLessons,
+                                        totalLessons: subject.totalLessons,
+                                        completedColor: subjectColor,
+                                        remainingColor: subjectColor.withValues(
+                                          alpha: 0.18,
+                                        ),
+                                        holeColor: holeColor,
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(height: 6),
+                              Text(
+                                '${(subject.progress * 100).toStringAsFixed(0)}%',
+                                style: GoogleFonts.poppins(
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.w700,
+                                  color: Theme.of(
+                                    context,
+                                  ).colorScheme.onSurface,
+                                ),
+                              ),
+                            ],
+                          );
+                        },
+                      ),
+                    );
+                  },
+                ),
+                Positioned(
+                  left: 0,
+                  top: 0,
+                  bottom: 0,
+                  child: Center(
+                    child: IconButton(
+                      onPressed: () {
+                        if (_subjectPageController.hasClients &&
+                            _subjectPageController.page != null) {
+                          final previous = (_subjectPageController.page! - 1)
+                              .round();
+                          if (previous >= 0) {
+                            _subjectPageController.animateToPage(
+                              previous,
+                              duration: const Duration(milliseconds: 320),
+                              curve: Curves.easeOut,
+                            );
+                          }
+                        }
+                      },
+                      icon: const Icon(Icons.chevron_left_rounded),
+                      tooltip: 'Previous subject',
+                    ),
+                  ),
+                ),
+                Positioned(
+                  right: 0,
+                  top: 0,
+                  bottom: 0,
+                  child: Center(
+                    child: IconButton(
+                      onPressed: () {
+                        if (_subjectPageController.hasClients &&
+                            _subjectPageController.page != null) {
+                          final next = (_subjectPageController.page! + 1)
+                              .round();
+                          if (next < subjects.length) {
+                            _subjectPageController.animateToPage(
+                              next,
+                              duration: const Duration(milliseconds: 320),
+                              curve: Curves.easeOut,
+                            );
+                          }
+                        }
+                      },
+                      icon: const Icon(Icons.chevron_right_rounded),
+                      tooltip: 'Next subject',
+                    ),
+                  ),
+                ),
+              ],
             ),
           ),
           const SizedBox(height: 12),
-          ...subjects.map((subject) {
-            final percent = (subject.progress * 100).toStringAsFixed(0);
-            final color =
-                _subjectChartColors[subject.subjectTitle] ??
-                const Color(0xFF9AA8BE);
-
-            return Padding(
-              padding: const EdgeInsets.only(bottom: 6),
-              child: Row(
-                children: [
-                  Container(
-                    width: 10,
-                    height: 10,
-                    decoration: BoxDecoration(
-                      color: color,
-                      shape: BoxShape.circle,
-                    ),
-                  ),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: Text(
-                      subject.subjectTitle,
-                      style: GoogleFonts.poppins(
-                        fontSize: 13,
-                        color: Theme.of(context).colorScheme.onSurface,
-                      ),
-                    ),
-                  ),
-                  Text(
-                    '$percent%',
-                    style: GoogleFonts.poppins(
-                      fontSize: 13,
-                      fontWeight: FontWeight.w600,
-                      color: Theme.of(context).colorScheme.onSurface,
-                    ),
-                  ),
-                ],
-              ),
-            );
-          }),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: List.generate(subjects.length, (index) {
+              final active = index == _subjectCarouselIndex;
+              return AnimatedContainer(
+                duration: const Duration(milliseconds: 220),
+                margin: const EdgeInsets.symmetric(horizontal: 4),
+                width: active ? 18 : 8,
+                height: 8,
+                decoration: BoxDecoration(
+                  color: active
+                      ? Theme.of(context).colorScheme.primary
+                      : Theme.of(
+                          context,
+                        ).colorScheme.onSurface.withValues(alpha: 0.25),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+              );
+            }),
+          ),
         ],
       ),
     );
@@ -1123,7 +1306,9 @@ class _HomeScreenState extends State<HomeScreen> {
               '${recentQuiz.subjectTitle} • ${recentQuiz.correctAnswers}/${recentQuiz.totalQuestions} • ${recentQuiz.percentage}%',
               style: GoogleFonts.poppins(
                 fontSize: 13,
-                color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.7),
+                color: Theme.of(
+                  context,
+                ).colorScheme.onSurface.withValues(alpha: 0.7),
               ),
             ),
           ],
