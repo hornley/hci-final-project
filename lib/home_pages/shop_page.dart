@@ -65,6 +65,28 @@ class _ShopPageState extends State<ShopPage> {
       return;
     }
 
+    final confirmUnlock = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text('Unlock ${item.name}?'),
+        content: Text('This will cost ${item.coinCost} coins. Continue?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('Cancel'),
+          ),
+          ElevatedButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: const Text('Unlock'),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmUnlock != true) {
+      return;
+    }
+
     final spent = await LocalStorage.spendCoins(item.coinCost);
     if (!spent) {
       _showMessage('Not enough coins.');
@@ -122,7 +144,9 @@ class _ShopPageState extends State<ShopPage> {
           'Spend coins earned from quests to unlock avatars.',
           style: GoogleFonts.poppins(
             fontSize: 14,
-            color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
+            color: Theme.of(
+              context,
+            ).colorScheme.onSurface.withValues(alpha: 0.6),
           ),
         ),
         const SizedBox(height: 12),
@@ -140,9 +164,7 @@ class _ShopPageState extends State<ShopPage> {
             decoration: BoxDecoration(
               color: Theme.of(context).colorScheme.surfaceVariant,
               borderRadius: BorderRadius.circular(12),
-              border: Border.all(
-                color: Theme.of(context).colorScheme.primary,
-              ),
+              border: Border.all(color: Theme.of(context).colorScheme.primary),
             ),
             child: Text(
               'Login required: guest accounts cannot purchase or equip locked avatars.',
@@ -206,7 +228,9 @@ class _ShopPageState extends State<ShopPage> {
           subtitle,
           style: GoogleFonts.poppins(
             fontSize: 12,
-            color: Theme.of(context).colorScheme.onSurface.withOpacity(0.7),
+            color: Theme.of(
+              context,
+            ).colorScheme.onSurface.withValues(alpha: 0.7),
           ),
         ),
         trailing: isUnlocked

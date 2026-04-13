@@ -293,6 +293,23 @@ class ProgressManager {
     );
   }
 
+  static Future<bool> hasPerfectQuizScore(String lessonTitle) async {
+    final data = await _loadData();
+    final quizStats = Map<String, dynamic>.from(data['quizStats'] as Map);
+    final stat = Map<String, dynamic>.from(
+      quizStats[lessonTitle] as Map? ?? const {},
+    );
+
+    if (stat.isEmpty) {
+      return false;
+    }
+
+    final totalQuestions = ((stat['totalQuestions'] as num?)?.toInt() ?? 0);
+    final bestCorrect = ((stat['bestCorrect'] as num?)?.toInt() ?? 0);
+
+    return totalQuestions > 0 && bestCorrect >= totalQuestions;
+  }
+
   static Future<void> markQuizRewardProgress({
     required String lessonTitle,
     bool claimBase = false,

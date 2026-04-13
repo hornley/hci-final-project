@@ -42,6 +42,7 @@ flutter:
     - assets/subjectsbg.jpg
     - assets/splash.png
     - assets/avatars/
+    - assets/icons/
     - assets/animations/
     - assets/
 

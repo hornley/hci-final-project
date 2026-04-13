@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import '../theme/app_theme.dart';
+import '../local_storage.dart';
 
 class SettingsPage extends StatefulWidget {
   final VoidCallback onGoToSubjects;
@@ -17,6 +19,23 @@ class SettingsPage extends StatefulWidget {
 
 class _SettingsPageState extends State<SettingsPage> {
   String _textSize = 'Medium';
+  bool _isAdmin = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadAdminState();
+  }
+
+  Future<void> _loadAdminState() async {
+    final username = await LocalStorage.getCurrentUsername();
+    if (!mounted) {
+      return;
+    }
+    setState(() {
+      _isAdmin = username == 'admin';
+    });
+  }
 
   double _getScale(String size) {
     switch (size) {
@@ -32,7 +51,7 @@ class _SettingsPageState extends State<SettingsPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Theme.of(context).colorScheme.background,
+      backgroundColor: context.scheme.surface,
       body: ListView(
         padding: const EdgeInsets.only(bottom: 24),
         children: [
@@ -66,9 +85,18 @@ class _SettingsPageState extends State<SettingsPage> {
               iconBg: const Color(0xFFFEE2E2),
               label: 'Reset Progress',
               sub: 'Wipe XP, level, and gold',
-              labelColor: Colors.red,
+              labelColor: context.appColors.danger,
               onTap: () => _confirmReset(context),
             ),
+            if (_isAdmin)
+              _navRow(
+                icon: Icons.group_remove_outlined,
+                iconBg: const Color(0xFFFEE2E2),
+                label: 'Remove All Accounts',
+                sub: 'Deletes every account except admin',
+                labelColor: context.appColors.danger,
+                onTap: () => _confirmRemoveAllAccounts(context),
+              ),
           ]),
         ],
       ),
@@ -76,26 +104,26 @@ class _SettingsPageState extends State<SettingsPage> {
   }
 
   Widget _sectionLabel(String text) => Padding(
-        padding: const EdgeInsets.fromLTRB(20, 18, 20, 6),
-        child: Text(
-          text.toUpperCase(),
-          style: GoogleFonts.poppins(
-            fontSize: 10,
-            fontWeight: FontWeight.w700,
-            color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
-            letterSpacing: 1.2,
-          ),
-        ),
-      );
+    padding: const EdgeInsets.fromLTRB(20, 18, 20, 6),
+    child: Text(
+      text.toUpperCase(),
+      style: GoogleFonts.poppins(
+        fontSize: 10,
+        fontWeight: FontWeight.w700,
+        color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
+        letterSpacing: 1.2,
+      ),
+    ),
+  );
 
   Widget _card(List<Widget> rows) => Container(
-        margin: const EdgeInsets.symmetric(horizontal: 14),
-        decoration: BoxDecoration(
-          color: Theme.of(context).colorScheme.surfaceVariant,
-          borderRadius: BorderRadius.circular(14),
-        ),
-        child: Column(children: rows),
-      );
+    margin: const EdgeInsets.symmetric(horizontal: 14),
+    decoration: BoxDecoration(
+      color: Theme.of(context).colorScheme.surfaceVariant,
+      borderRadius: BorderRadius.circular(14),
+    ),
+    child: Column(children: rows),
+  );
 
   Widget _navRow({
     required IconData icon,
@@ -123,33 +151,26 @@ class _SettingsPageState extends State<SettingsPage> {
                     style: GoogleFonts.poppins(
                       fontSize: 14,
                       fontWeight: FontWeight.w600,
-                      color: labelColor ??
-                          Theme.of(context).colorScheme.onSurface,
+                      color:
+                          labelColor ?? Theme.of(context).colorScheme.onSurface,
                     ),
                   ),
                   Text(
                     sub,
                     style: GoogleFonts.poppins(
                       fontSize: 11,
-                      color: Theme.of(context)
-                          .colorScheme
-                          .onSurface
-                          .withOpacity(0.7),
+                      color: Theme.of(
+                        context,
+                      ).colorScheme.onSurface.withOpacity(0.7),
                     ),
                   ),
                 ],
               ),
             ),
-            if (trailing != null) ...[
-              trailing,
-              const SizedBox(width: 6),
-            ],
+            if (trailing != null) ...[trailing, const SizedBox(width: 6)],
             Icon(
               Icons.chevron_right,
-              color: Theme.of(context)
-                  .colorScheme
-                  .onSurface
-                  .withOpacity(0.5),
+              color: Theme.of(context).colorScheme.onSurface.withOpacity(0.5),
               size: 20,
             ),
           ],
@@ -159,34 +180,30 @@ class _SettingsPageState extends State<SettingsPage> {
   }
 
   Widget _iconWrap(IconData icon, Color bg) => Container(
-        width: 36,
-        height: 36,
-        decoration: BoxDecoration(
-          color: bg,
-          borderRadius: BorderRadius.circular(9),
-        ),
-        child: Icon(
-          icon,
-          size: 18,
-          color: Theme.of(context).colorScheme.primary,
-        ),
-      );
+    width: 36,
+    height: 36,
+    decoration: BoxDecoration(
+      color: bg,
+      borderRadius: BorderRadius.circular(9),
+    ),
+    child: Icon(icon, size: 18, color: Theme.of(context).colorScheme.primary),
+  );
 
   Widget _pill(String text) => Container(
-        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-        decoration: BoxDecoration(
-          color: Theme.of(context).colorScheme.surfaceVariant,
-          borderRadius: BorderRadius.circular(8),
-        ),
-        child: Text(
-          text,
-          style: GoogleFonts.poppins(
-            fontSize: 12,
-            fontWeight: FontWeight.w600,
-            color: Theme.of(context).colorScheme.onSurface,
-          ),
-        ),
-      );
+    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+    decoration: BoxDecoration(
+      color: Theme.of(context).colorScheme.surfaceVariant,
+      borderRadius: BorderRadius.circular(8),
+    ),
+    child: Text(
+      text,
+      style: GoogleFonts.poppins(
+        fontSize: 12,
+        fontWeight: FontWeight.w600,
+        color: Theme.of(context).colorScheme.onSurface,
+      ),
+    ),
+  );
 
   void _showTextSizePicker(BuildContext context) {
     showModalBottomSheet(
@@ -208,9 +225,10 @@ class _SettingsPageState extends State<SettingsPage> {
                     ),
                   ),
                   trailing: _textSize == size
-                      ? Icon(Icons.check,
-                          color:
-                              Theme.of(context).colorScheme.primary)
+                      ? Icon(
+                          Icons.check,
+                          color: Theme.of(context).colorScheme.primary,
+                        )
                       : null,
                   onTap: () {
                     setState(() => _textSize = size);
@@ -240,10 +258,7 @@ class _SettingsPageState extends State<SettingsPage> {
         content: Text(
           'This will wipe all your XP, gold, and level.',
           style: GoogleFonts.poppins(
-            color: Theme.of(context)
-                .colorScheme
-                .onSurface
-                .withOpacity(0.7),
+            color: Theme.of(context).colorScheme.onSurface.withOpacity(0.7),
           ),
         ),
         actions: [
@@ -251,15 +266,64 @@ class _SettingsPageState extends State<SettingsPage> {
             onPressed: () => Navigator.pop(context),
             child: Text(
               'Cancel',
-              style: TextStyle(
-                  color: Theme.of(context).colorScheme.primary),
+              style: TextStyle(color: context.scheme.primary),
             ),
           ),
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text(
+            child: Text(
               'Reset',
-              style: TextStyle(color: Colors.red),
+              style: TextStyle(color: context.appColors.danger),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _confirmRemoveAllAccounts(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (_) => AlertDialog(
+        title: Text(
+          'Remove all accounts?',
+          style: GoogleFonts.poppins(
+            fontWeight: FontWeight.w700,
+            color: Theme.of(context).colorScheme.onSurface,
+          ),
+        ),
+        content: Text(
+          'This deletes all user accounts and keeps only the admin account.',
+          style: GoogleFonts.poppins(
+            color: Theme.of(context).colorScheme.onSurface.withOpacity(0.7),
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: Text(
+              'Cancel',
+              style: TextStyle(color: context.scheme.primary),
+            ),
+          ),
+          TextButton(
+            onPressed: () async {
+              Navigator.pop(context);
+              await LocalStorage.removeAllAccountsExceptAdmin();
+              if (!mounted) {
+                return;
+              }
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(
+                  content: Text(
+                    'All accounts removed. Admin account preserved.',
+                  ),
+                ),
+              );
+            },
+            child: Text(
+              'Remove All',
+              style: TextStyle(color: context.appColors.danger),
             ),
           ),
         ],

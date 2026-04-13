@@ -12,6 +12,24 @@ class LocalStorage {
   static const _keyGuestLevel = 'guestLevel';
   static const _textScaleKey = 'text_scale';
 
+  static Map<String, dynamic> _adminAccount() {
+    return {
+      'firstName': 'Admin',
+      'lastName': '',
+      'middleInitial': '',
+      'age': 0,
+      'phone': '',
+      'email': '',
+      'username': 'admin',
+      'password': 'admin',
+      'exp': 0,
+      'coins': 0,
+      'level': 1,
+      'selectedAvatar': 0,
+      'unlockedAvatars': [0],
+    };
+  }
+
   // Save login state
   static Future<void> setLoggedIn(bool value) async {
     final prefs = await SharedPreferences.getInstance();
@@ -45,24 +63,19 @@ class LocalStorage {
   static Future<void> initAccounts() async {
     final prefs = await SharedPreferences.getInstance();
     if (!prefs.containsKey(_keyAccounts)) {
-      final adminAccount = {
-        'firstName': 'Admin',
-        'lastName': '',
-        'middleInitial': '',
-        'age': 0,
-        'phone': '',
-        'email': '',
-        'username': 'admin',
-        'password': 'admin',
-        'exp': 0,
-        'coins': 0,
-        'level': 1,
-        'selectedAvatar': 0,
-        'unlockedAvatars': [0],
-      };
-      final accounts = [adminAccount];
+      final accounts = [_adminAccount()];
       await prefs.setString(_keyAccounts, jsonEncode(accounts));
     }
+  }
+
+  static Future<void> removeAllAccountsExceptAdmin() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString(_keyAccounts, jsonEncode([_adminAccount()]));
+    await prefs.remove(_keyGuestExp);
+    await prefs.remove(_keyGuestCoins);
+    await prefs.remove(_keyGuestLevel);
+    await setLoggedIn(true);
+    await setCurrentUsername('admin');
   }
 
   // Create a new account
@@ -127,6 +140,14 @@ class LocalStorage {
     }
 
     return false;
+  }
+
+  static Future<bool> accountExists(String username) async {
+    if (username.trim().isEmpty) {
+      return false;
+    }
+    final accounts = await getAccounts();
+    return accounts.any((acc) => acc['username'] == username);
   }
 
   // Get all accounts (optional, for admin panel)
@@ -461,7 +482,7 @@ class LocalStorage {
     await setCoins(current - amount);
     return true;
   }
-  
+
   static Future<void> setTextScale(double scale) async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setDouble(_textScaleKey, scale);

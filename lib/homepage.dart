@@ -108,10 +108,7 @@ class _LessonCompletionPiePainter extends CustomPainter {
 class HomeScreen extends StatefulWidget {
   final ValueChanged<double> onTextScaleChanged;
 
-  const HomeScreen({
-    super.key,
-    required this.onTextScaleChanged,
-  });
+  const HomeScreen({super.key, required this.onTextScaleChanged});
 
   @override
   State<HomeScreen> createState() => _HomeScreenState();
@@ -126,7 +123,6 @@ class _HomeScreenState extends State<HomeScreen> {
   bool _showBottomNavTutorial = false;
   bool _showBottomNavTutorialIntro = false;
   int _tutorialStepIndex = 0;
-  double _textScale = 1.0;
 
   final List<GlobalKey> _bottomNavItemKeys = List.generate(
     5,
@@ -911,11 +907,19 @@ class _HomeScreenState extends State<HomeScreen> {
                   horizontal: 16,
                   vertical: 12,
                 ),
+                color:
+                    Theme.of(
+                      context,
+                    ).bottomNavigationBarTheme.backgroundColor ??
+                    Theme.of(context).colorScheme.primary,
                 child: Row(
                   children: [
                     Builder(
                       builder: (context) => IconButton(
-                        icon: const Icon(Icons.menu),
+                        icon: Icon(
+                          Icons.menu,
+                          color: Theme.of(context).colorScheme.onPrimary,
+                        ),
                         onPressed: () => Scaffold.of(context).openDrawer(),
                       ),
                     ),
@@ -928,28 +932,13 @@ class _HomeScreenState extends State<HomeScreen> {
                           style: GoogleFonts.poppins(
                             fontSize: 25,
                             fontWeight: FontWeight.bold,
-                            color: Theme.of(context).colorScheme.onSurface,
+                            color: Theme.of(context).colorScheme.onPrimary,
                           ),
                         ),
                       ),
                     ),
-                    IconButton(
-                      icon: Transform.rotate(
-                        angle: -0.35,
-                        child: const Icon(Icons.nightlight_round),
-                      ),
-                      onPressed: () => themeController.toggle(),
-                      style: IconButton.styleFrom(
-                        shape: CircleBorder(
-                          side: BorderSide(
-                            color:
-                                Theme.of(context).iconTheme.color ??
-                                Colors.grey,
-                            width: 1,
-                          ),
-                        ),
-                      ),
-                    ),
+                    const SizedBox(width: 12),
+                    const ThemeToggleButton(),
                     const SizedBox(width: 8),
                   ],
                 ),
@@ -961,18 +950,13 @@ class _HomeScreenState extends State<HomeScreen> {
                     : _showSettingsContent
                     ? SettingsPage(
                         onGoToSubjects: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (_) => ProfilePage(
-                                avatars: avatars,
-                                selectedAvatar: _selectedAvatar,
-                                onChangeAvatar: _showAvatarPicker,
-                                onLogout: () {},
-                                onOpenSettings: () {},
-                              ),
-                            ),
-                          );
+                          setState(() {
+                            _showSettingsContent = false;
+                            _showHomeContent = false;
+                            _showShopContent = false;
+                            _showAboutContent = false;
+                            _selectedIndex = 2;
+                          });
                         },
                         onTextScaleChanged: (scale) {
                           widget.onTextScaleChanged(scale);

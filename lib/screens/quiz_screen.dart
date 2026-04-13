@@ -31,6 +31,7 @@ class QuizScreen extends StatefulWidget {
 class _QuizScreenState extends State<QuizScreen> {
   int currentIndex = 0;
   final Map<int, String> answers = {}; // Store all user answers
+  final Map<int, String> _typingDrafts = {};
 
   void _showHint() {
     final problem = widget.problems[currentIndex];
@@ -55,7 +56,84 @@ class _QuizScreenState extends State<QuizScreen> {
     }
   }
 
-  void _nextQuestion() {
+  bool _hasMeaningfulAnswer(String? value, QuestionType type) {
+    final normalized = value?.trim() ?? '';
+    if (normalized.isEmpty) {
+      return false;
+    }
+    if (type == QuestionType.dragAndDrop) {
+      return normalized.split(',').any((part) => part.trim().isNotEmpty);
+    }
+    return true;
+  }
+
+  Future<bool> _confirmContinueWithoutAnswer() async {
+    final proceed = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) {
+        final scheme = Theme.of(dialogContext).colorScheme;
+        return AlertDialog(
+          backgroundColor: scheme.surface,
+          title: Text(
+            'Continue without answering?',
+            style: TextStyle(
+              color: scheme.onSurface,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+          content: Text(
+            'You have not provided an answer for this question yet.',
+            style: TextStyle(color: scheme.onSurface.withValues(alpha: 0.9)),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(dialogContext, false),
+              style: TextButton.styleFrom(
+                foregroundColor: scheme.onSurface,
+                side: BorderSide(
+                  color: scheme.onSurface.withValues(alpha: 0.5),
+                ),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8),
+                ),
+              ),
+              child: const Text('Cancel'),
+            ),
+            ElevatedButton(
+              onPressed: () => Navigator.pop(dialogContext, true),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: scheme.primary,
+                foregroundColor: scheme.onPrimary,
+              ),
+              child: const Text('Continue'),
+            ),
+          ],
+        );
+      },
+    );
+    return proceed == true;
+  }
+
+  Future<void> _nextQuestion() async {
+    final problem = widget.problems[currentIndex];
+
+    if (problem.type == QuestionType.typing) {
+      final draft = (_typingDrafts[currentIndex] ?? '').trim();
+      if (draft.isNotEmpty) {
+        setState(() {
+          answers[currentIndex] = draft;
+        });
+      }
+    }
+
+    final hasAnswer = _hasMeaningfulAnswer(answers[currentIndex], problem.type);
+    if (!hasAnswer) {
+      final shouldContinue = await _confirmContinueWithoutAnswer();
+      if (!shouldContinue || !mounted) {
+        return;
+      }
+    }
+
     if (currentIndex < widget.problems.length - 1) {
       setState(() {
         currentIndex++;
@@ -86,12 +164,14 @@ class _QuizScreenState extends State<QuizScreen> {
     final problem = widget.problems[currentIndex];
     final userAnswer = answers[currentIndex];
     final themeColor = widget.themeColor;
+    final scheme = Theme.of(context).colorScheme;
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final primary = Theme.of(context).colorScheme.primary;
     final buttonBackground = isDark
-        ? const Color(0xFF1565C0) // Darker blue for dark mode
-        : (themeColor ?? primary);
-    final buttonForeground = Colors.white;
+        ? context.appColors.action
+        : (themeColor ?? context.appColors.action);
+    final buttonForeground = buttonBackground.computeLuminance() > 0.6
+        ? Colors.black87
+        : Colors.white;
 
     Widget questionWidget;
 
@@ -118,6 +198,9 @@ class _QuizScreenState extends State<QuizScreen> {
           onAnswerSubmitted: (answer) =>
               setState(() => answers[currentIndex] = answer),
           initialText: userAnswer,
+          onDraftChanged: (value) {
+            _typingDrafts[currentIndex] = value;
+          },
         );
         break;
       case QuestionType.dragAndDrop:
@@ -159,6 +242,10 @@ class _QuizScreenState extends State<QuizScreen> {
                   style: ElevatedButton.styleFrom(
                     backgroundColor: buttonBackground,
                     foregroundColor: buttonForeground,
+                    disabledBackgroundColor: scheme.surfaceContainerHighest,
+                    disabledForegroundColor: scheme.onSurface.withValues(
+                      alpha: 0.45,
+                    ),
                   ),
                   child: Text(
                     "Previous",
@@ -367,11 +454,12 @@ class _QuizResultsScreenState extends State<QuizResultsScreen> {
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final primary = Theme.of(context).colorScheme.primary;
     final buttonBackground = isDark
-        ? const Color(0xFF1565C0) // Darker blue for dark mode
-        : (widget.themeColor ?? primary);
-    final buttonForeground = Colors.white;
+        ? context.appColors.action
+        : (widget.themeColor ?? context.appColors.action);
+    final buttonForeground = buttonBackground.computeLuminance() > 0.6
+        ? Colors.black87
+        : Colors.white;
 
     return Scaffold(
       appBar: AppBar(

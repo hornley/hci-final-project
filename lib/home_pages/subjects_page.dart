@@ -12,6 +12,16 @@ class SubjectsPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final linearLessonCount = linearAlgebraLessons.length;
+    final chemistryLessonCount = chemistryLessons.length;
+    final calculusLessonCount = integralCalculusLessons.length;
+    final physicsLessonCount = physicsLessons.length;
+    final totalLessonCount =
+        linearLessonCount +
+        chemistryLessonCount +
+        calculusLessonCount +
+        physicsLessonCount;
+
     return Container(
       color: Theme.of(context).scaffoldBackgroundColor,
       child: SingleChildScrollView(
@@ -19,13 +29,13 @@ class SubjectsPage extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            _headerCard(context),
+            _headerCard(context, totalLessonCount),
             const SizedBox(height: 16),
             _courseCard(
               context,
               title: "Linear Algebra",
               subtitle: "Matrices, vectors, spaces",
-              meta: "+9 lessons",
+              meta: '$linearLessonCount lessons',
               chipLabel: "Linear Algebra",
               color: const Color(0xFFFBF0F7),
               icon: "assets/icons/linear.png",
@@ -46,7 +56,7 @@ class SubjectsPage extends StatelessWidget {
               context,
               title: "Chemistry",
               subtitle: "Atoms, reactions",
-              meta: "+2 lessons",
+              meta: '$chemistryLessonCount lessons',
               chipLabel: "Chemistry",
               color: const Color(0xFFFAF1C2),
               icon: "assets/icons/chemistry.png",
@@ -67,7 +77,7 @@ class SubjectsPage extends StatelessWidget {
               context,
               title: "Integral Calculus",
               subtitle: "Integration, areas",
-              meta: "+2 lessons",
+              meta: '$calculusLessonCount lessons',
               chipLabel: "Calculus",
               color: const Color(0xFFE2F2EF),
               icon: "assets/icons/calculus.png",
@@ -88,7 +98,7 @@ class SubjectsPage extends StatelessWidget {
               context,
               title: "Physics",
               subtitle: "Motion, energy, forces",
-              meta: "+2 lessons",
+              meta: '$physicsLessonCount lessons',
               chipLabel: "Physics",
               color: const Color(0xFFF3F1EC),
               icon: "assets/icons/physics.png",
@@ -110,7 +120,7 @@ class SubjectsPage extends StatelessWidget {
     );
   }
 
-  Widget _headerCard(BuildContext context) {
+  Widget _headerCard(BuildContext context, int totalLessonCount) {
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.fromLTRB(18, 20, 18, 22),
@@ -149,7 +159,7 @@ class SubjectsPage extends StatelessWidget {
                   children: [
                     _statChip("4 subjects"),
                     const SizedBox(width: 8),
-                    _statChip("15 lessons"),
+                    _statChip('$totalLessonCount lessons'),
                   ],
                 ),
               ],

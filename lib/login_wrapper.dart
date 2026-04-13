@@ -7,6 +7,7 @@ import 'package:hci_final_project/homepage.dart';
 import 'package:hci_final_project/progress_manager.dart';
 import 'package:hci_final_project/quest_manager.dart';
 import 'package:hci_final_project/screens/createaccountscreen.dart';
+import 'package:hci_final_project/theme/app_theme.dart';
 import 'local_storage.dart';
 
 class LoginScreen extends StatefulWidget {
@@ -70,6 +71,24 @@ class _LoginScreenState extends State<LoginScreen> {
     });
   }
 
+  Future<void> _showAccountNotFoundDialog(String username) async {
+    await showDialog<void>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Account not found'),
+        content: Text(
+          'No account exists for "$username". Please register first.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('OK'),
+          ),
+        ],
+      ),
+    );
+  }
+
   void _login() async {
     String username = _usernameController.text.trim();
     String password = _passwordController.text.trim();
@@ -129,7 +148,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     width: 70,
                     height: 70,
                     decoration: BoxDecoration(
-                      color: const Color(0xFF4CAF50),
+                      color: context.appColors.success,
                       shape: BoxShape.circle,
                     ),
                     child: const Icon(
@@ -164,7 +183,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     child: ElevatedButton(
                       style: ElevatedButton.styleFrom(
                         padding: const EdgeInsets.symmetric(vertical: 16),
-                        backgroundColor: const Color(0xFF3E5C8A),
+                        backgroundColor: context.appColors.action,
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(20),
                         ),
@@ -202,7 +221,15 @@ class _LoginScreenState extends State<LoginScreen> {
         setState(() {
           _isLoggingIn = false;
         });
-        _showLoginError('Invalid username or password');
+        final exists = await LocalStorage.accountExists(username);
+        if (!mounted) {
+          return;
+        }
+        if (!exists) {
+          await _showAccountNotFoundDialog(username);
+        } else {
+          _showLoginError('Invalid username or password');
+        }
       }
     } catch (e) {
       if (!mounted) return;
@@ -214,6 +241,30 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 
   void _guestLogin() async {
+    final continueAsGuest = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Continue as Guest?'),
+        content: const Text(
+          'Guest progress is temporary and will be lost once you log out.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('Cancel'),
+          ),
+          ElevatedButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: const Text('Continue'),
+          ),
+        ],
+      ),
+    );
+
+    if (continueAsGuest != true) {
+      return;
+    }
+
     await LocalStorage.setLoggedIn(true);
     await LocalStorage.clearCurrentUsername();
     await QuestManager.resetGuestQuestState();
@@ -221,6 +272,9 @@ class _LoginScreenState extends State<LoginScreen> {
     await LocalStorage.setExp(0);
     await LocalStorage.setCoins(0);
     await LocalStorage.setLevel(1);
+    if (!mounted) {
+      return;
+    }
     Navigator.pushReplacement(
       context,
       MaterialPageRoute(
@@ -330,8 +384,8 @@ class _LoginScreenState extends State<LoginScreen> {
                   _hoverButton(
                     label: "LOGIN",
                     onPressed: _isLoggingIn ? () {} : _login,
-                    baseColor: const Color(0xFF3E5C8A),
-                    hoverColor: const Color(0xFF2F4A74),
+                    baseColor: context.appColors.action,
+                    hoverColor: context.appColors.actionHover,
                     textColor: Colors.white,
                     hoverTextColor: Colors.white,
                     isLoading: _isLoggingIn,
@@ -363,11 +417,13 @@ class _LoginScreenState extends State<LoginScreen> {
                   _hoverButton(
                     label: "Continue as Guest",
                     onPressed: _guestLogin,
-                    baseColor: Colors.white,
-                    hoverColor: const Color(0xFFE2E6EC),
-                    textColor: const Color(0xFF1B2B45),
-                    hoverTextColor: const Color(0xFF1B2B45),
-                    borderColor: const Color(0xFF395886),
+                    baseColor: Theme.of(context).colorScheme.surface,
+                    hoverColor: Theme.of(
+                      context,
+                    ).colorScheme.surfaceContainerHighest,
+                    textColor: Theme.of(context).colorScheme.onSurface,
+                    hoverTextColor: Theme.of(context).colorScheme.onSurface,
+                    borderColor: Theme.of(context).colorScheme.primary,
                   ),
                   const SizedBox(height: 18),
                   Row(
@@ -394,7 +450,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         child: Text(
                           "Register now",
                           style: GoogleFonts.inter(
-                            color: const Color(0xFFD14B4B),
+                            color: context.appColors.link,
                             fontWeight: FontWeight.w600,
                             fontSize: 12,
                           ),
@@ -438,7 +494,9 @@ class _LoginScreenState extends State<LoginScreen> {
             hintText: hint,
             hintStyle: GoogleFonts.inter(
               fontSize: 14,
-              color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.55),
+              color: Theme.of(
+                context,
+              ).colorScheme.onSurface.withValues(alpha: 0.55),
             ),
             border: InputBorder.none,
             contentPadding: const EdgeInsets.symmetric(
@@ -481,8 +539,8 @@ class _LoginScreenState extends State<LoginScreen> {
                 border: Border.all(color: buttonBorder, width: 1),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withValues(alpha: 
-                      isHovered && !isLoading ? 0.2 : 0.12,
+                    color: Colors.black.withValues(
+                      alpha: isHovered && !isLoading ? 0.2 : 0.12,
                     ),
                     blurRadius: isHovered && !isLoading ? 18 : 12,
                     offset: Offset(0, isHovered && !isLoading ? 10 : 6),

@@ -6,12 +6,14 @@ class TypingQuestion extends StatefulWidget {
   final QuizProblem problem;
   final String? initialText;
   final void Function(String) onAnswerSubmitted;
+  final void Function(String)? onDraftChanged;
 
   const TypingQuestion({
     super.key,
     required this.problem,
     this.initialText,
     required this.onAnswerSubmitted,
+    this.onDraftChanged,
   });
 
   @override
@@ -22,14 +24,30 @@ class _TypingQuestionState extends State<TypingQuestion> {
   final TextEditingController _controller = TextEditingController();
 
   @override
+  void initState() {
+    super.initState();
+    _controller.text = widget.initialText ?? '';
+  }
+
+  @override
+  void didUpdateWidget(covariant TypingQuestion oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    final incoming = widget.initialText ?? '';
+    if (incoming != _controller.text) {
+      _controller.text = incoming;
+    }
+  }
+
+  @override
   void dispose() {
     _controller.dispose();
     super.dispose();
   }
 
   void _submitAnswer() {
-    if (_controller.text.isNotEmpty) {
-      widget.onAnswerSubmitted(_controller.text);
+    final value = _controller.text.trim();
+    if (value.isNotEmpty) {
+      widget.onAnswerSubmitted(value);
     }
   }
 
@@ -74,18 +92,10 @@ class _TypingQuestionState extends State<TypingQuestion> {
               color: Theme.of(context).colorScheme.onSurface,
             ),
             textAlign: TextAlign.center,
+            onChanged: (value) {
+              widget.onDraftChanged?.call(value);
+            },
             onSubmitted: (_) => _submitAnswer(),
-          ),
-        ),
-        const SizedBox(height: 20),
-        ElevatedButton(
-          onPressed: _submitAnswer,
-          style: ElevatedButton.styleFrom(
-            backgroundColor: Theme.of(context).colorScheme.primary,
-          ),
-          child: Text(
-            "Submit",
-            style: TextStyle(fontSize: 18, color: Colors.white),
           ),
         ),
       ],

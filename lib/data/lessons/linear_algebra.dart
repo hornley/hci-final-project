@@ -89,7 +89,8 @@ final vectorLesson = Lesson(
     ),
     QuizProblem(
       question: "Write the vector resulting from \$2(1,3)\$:",
-      type: QuestionType.typing,
+      type: QuestionType.multipleChoice,
+      options: ["\$(2,6)\$", "\$(2,3)\$", "\$(1,6)\$", "\$(3,6)\$"],
       answer: "\$(2,6)\$",
       hint: "Multiply each component by 2.",
     ),
@@ -209,9 +210,11 @@ final linearSystemsLesson = Lesson(
       hint: "Think of row operations used in augmented matrices.",
     ),
     QuizProblem(
-      question: "Solve the system: x + y = 3, x - y = 1",
-      type: QuestionType.typing,
-      answer: "x=2,y=1",
+      question:
+          "What are the values of x and y for the system x + y = 3 and x - y = 1?",
+      type: QuestionType.multipleChoice,
+      options: ["x = 2, y = 1", "x = 1, y = 2", "x = 3, y = 0", "x = 0, y = 3"],
+      answer: "x = 2, y = 1",
       hint: "Add both equations to eliminate y first.",
     ),
   ],
@@ -330,7 +333,8 @@ final orthogonalityLesson = Lesson(
     ),
     QuizProblem(
       question: "Compute the projection of u=(3,4) onto v=(1,0)",
-      type: QuestionType.typing,
+      type: QuestionType.multipleChoice,
+      options: ["(3,0)", "(0,4)", "(3,4)", "(1,0)"],
       answer: "(3,0)",
       hint: "Projecting onto (1,0) keeps only the x-component.",
     ),

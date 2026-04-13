@@ -14,6 +14,63 @@ class ThemeController extends ValueNotifier<ThemeMode> {
 final ThemeController themeController = ThemeController();
 
 @immutable
+class AppColors extends ThemeExtension<AppColors> {
+  const AppColors({
+    required this.success,
+    required this.warning,
+    required this.danger,
+    required this.action,
+    required this.actionHover,
+    required this.link,
+  });
+
+  final Color success;
+  final Color warning;
+  final Color danger;
+  final Color action;
+  final Color actionHover;
+  final Color link;
+
+  @override
+  AppColors copyWith({
+    Color? success,
+    Color? warning,
+    Color? danger,
+    Color? action,
+    Color? actionHover,
+    Color? link,
+  }) {
+    return AppColors(
+      success: success ?? this.success,
+      warning: warning ?? this.warning,
+      danger: danger ?? this.danger,
+      action: action ?? this.action,
+      actionHover: actionHover ?? this.actionHover,
+      link: link ?? this.link,
+    );
+  }
+
+  @override
+  AppColors lerp(ThemeExtension<AppColors>? other, double t) {
+    if (other is! AppColors) return this;
+    return AppColors(
+      success: Color.lerp(success, other.success, t) ?? success,
+      warning: Color.lerp(warning, other.warning, t) ?? warning,
+      danger: Color.lerp(danger, other.danger, t) ?? danger,
+      action: Color.lerp(action, other.action, t) ?? action,
+      actionHover: Color.lerp(actionHover, other.actionHover, t) ?? actionHover,
+      link: Color.lerp(link, other.link, t) ?? link,
+    );
+  }
+}
+
+extension AppThemeContext on BuildContext {
+  ColorScheme get scheme => Theme.of(this).colorScheme;
+  AppSizes get appSizes => Theme.of(this).extension<AppSizes>()!;
+  AppColors get appColors => Theme.of(this).extension<AppColors>()!;
+}
+
+@immutable
 class AppSizes extends ThemeExtension<AppSizes> {
   const AppSizes({required this.appBarHeight, required this.bottomNavHeight});
 
@@ -44,6 +101,14 @@ ThemeData buildAppTheme() {
   const primary = Color(0xFF395886);
   const surface = Color(0xFFF2F6FC);
   const appSizes = AppSizes(appBarHeight: 66, bottomNavHeight: 72);
+  const appColors = AppColors(
+    success: Color(0xFF4CAF50),
+    warning: Color(0xFFF59E0B),
+    danger: Color(0xFFD14B4B),
+    action: Color(0xFF3E5C8A),
+    actionHover: Color(0xFF2F4A74),
+    link: Color(0xFFD14B4B),
+  );
 
   return ThemeData(
     colorScheme: ColorScheme.fromSeed(
@@ -116,7 +181,7 @@ ThemeData buildAppTheme() {
       unselectedItemColor: Colors.white,
       type: BottomNavigationBarType.fixed,
     ),
-    extensions: const [appSizes],
+    extensions: const [appSizes, appColors],
   );
 }
 
@@ -124,6 +189,14 @@ ThemeData buildDarkTheme() {
   const primary = Color(0xFF1F2E46);
   const surface = Color(0xFF131A24);
   const appSizes = AppSizes(appBarHeight: 66, bottomNavHeight: 72);
+  const appColors = AppColors(
+    success: Color(0xFF66BB6A),
+    warning: Color(0xFFFFB74D),
+    danger: Color(0xFFE57373),
+    action: Color(0xFF4C78B2),
+    actionHover: Color(0xFF3B6798),
+    link: Color(0xFFFF8A80),
+  );
   const darkButtonForeground = Colors.white;
   final darkScheme = ColorScheme.fromSeed(
     seedColor: primary,
@@ -175,7 +248,7 @@ ThemeData buildDarkTheme() {
     iconButtonTheme: IconButtonThemeData(
       style: IconButton.styleFrom(foregroundColor: darkButtonForeground),
     ),
-    extensions: const [appSizes],
+    extensions: const [appSizes, appColors],
   );
 }
 
@@ -188,16 +261,26 @@ class ThemeToggleButton extends StatelessWidget {
       valueListenable: themeController,
       builder: (context, mode, _) {
         final isDark = mode == ThemeMode.dark;
+        final scheme = Theme.of(context).colorScheme;
         return Padding(
           padding: const EdgeInsets.only(right: 20),
-          child: Transform.rotate(
-            angle: -0.35,
-            child: IconButton(
-              tooltip: isDark ? 'Light mode' : 'Dark mode',
-              onPressed: themeController.toggle,
-              icon: Icon(
-                Icons.nightlight_round,
-                color: isDark ? const Color(0xFFFFD54F) : Colors.white,
+          child: Container(
+            decoration: BoxDecoration(
+              color: scheme.onPrimary.withValues(alpha: 0.14),
+              borderRadius: BorderRadius.circular(999),
+              border: Border.all(
+                color: scheme.onPrimary.withValues(alpha: 0.35),
+              ),
+            ),
+            child: Transform.rotate(
+              angle: -0.35,
+              child: IconButton(
+                tooltip: isDark ? 'Light mode' : 'Dark mode',
+                onPressed: themeController.toggle,
+                icon: Icon(
+                  Icons.nightlight_round,
+                  color: isDark ? const Color(0xFFFFD54F) : scheme.onPrimary,
+                ),
               ),
             ),
           ),

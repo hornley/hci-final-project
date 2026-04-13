@@ -308,7 +308,43 @@ class _LessonDetailBodyState extends State<LessonDetailBody> {
                               SizedBox(
                                 width: double.infinity,
                                 child: ElevatedButton(
-                                  onPressed: () {
+                                  onPressed: () async {
+                                    final hasPerfectScore =
+                                        await ProgressManager.hasPerfectQuizScore(
+                                          widget.lesson.title,
+                                        );
+                                    if (!mounted) {
+                                      return;
+                                    }
+
+                                    if (hasPerfectScore) {
+                                      final shouldRetake = await showDialog<bool>(
+                                        context: context,
+                                        builder: (context) => AlertDialog(
+                                          title: const Text('Retake quiz?'),
+                                          content: const Text(
+                                            'You already completed this quiz with 100%. Do you still want to retake it?',
+                                          ),
+                                          actions: [
+                                            TextButton(
+                                              onPressed: () =>
+                                                  Navigator.pop(context, false),
+                                              child: const Text('Cancel'),
+                                            ),
+                                            ElevatedButton(
+                                              onPressed: () =>
+                                                  Navigator.pop(context, true),
+                                              child: const Text('Retake'),
+                                            ),
+                                          ],
+                                        ),
+                                      );
+
+                                      if (shouldRetake != true || !mounted) {
+                                        return;
+                                      }
+                                    }
+
                                     Navigator.push(
                                       context,
                                       MaterialPageRoute(
@@ -646,6 +682,7 @@ class _LessonInteractionCardState extends State<_LessonInteractionCard> {
   bool _toggleOn = false;
   String? _selectedOption;
   late List<String?> _dragPlaced;
+  bool _isDragSkipped = false;
 
   @override
   void initState() {
@@ -684,6 +721,9 @@ class _LessonInteractionCardState extends State<_LessonInteractionCard> {
             : _value;
         return (current - baseline).abs() >= 0.5;
       case LessonInteractionType.dragArrangement:
+        if (_isDragSkipped) {
+          return true;
+        }
         final expected = interaction.expectedOrder;
         if (expected == null || expected.isEmpty) {
           return true;
@@ -873,6 +913,8 @@ class _LessonInteractionCardState extends State<_LessonInteractionCard> {
     final draggableOptions =
         widget.interaction.draggableOptions ?? const <String>[];
     final expectedOrder = widget.interaction.expectedOrder ?? const <String>[];
+    final availableOptions = List<String>.from(draggableOptions)
+      ..removeWhere((item) => _dragPlaced.contains(item));
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -880,7 +922,7 @@ class _LessonInteractionCardState extends State<_LessonInteractionCard> {
         Wrap(
           spacing: 8,
           runSpacing: 8,
-          children: draggableOptions.map((item) {
+          children: availableOptions.map((item) {
             return Draggable<String>(
               data: item,
               feedback: Material(
@@ -906,44 +948,75 @@ class _LessonInteractionCardState extends State<_LessonInteractionCard> {
           DragTarget<String>(
             onAcceptWithDetails: (details) {
               setState(() {
+                _isDragSkipped = false;
                 _dragPlaced[i] = details.data;
               });
               _notifyCompletion();
             },
             builder: (context, candidateData, rejectedData) {
-              return Container(
-                width: double.infinity,
-                margin: const EdgeInsets.only(bottom: 8),
-                padding: const EdgeInsets.all(10),
-                decoration: BoxDecoration(
-                  color: Theme.of(
-                    context,
-                  ).colorScheme.surfaceContainerHighest.withValues(alpha: 0.45),
-                  borderRadius: BorderRadius.circular(8),
-                  border: Border.all(
-                    color: Theme.of(
-                      context,
-                    ).colorScheme.outline.withValues(alpha: 0.28),
+              return GestureDetector(
+                onTap: _dragPlaced[i] == null
+                    ? null
+                    : () {
+                        setState(() {
+                          _isDragSkipped = false;
+                          _dragPlaced[i] = null;
+                        });
+                        _notifyCompletion();
+                      },
+                child: Container(
+                  width: double.infinity,
+                  margin: const EdgeInsets.only(bottom: 8),
+                  padding: const EdgeInsets.all(10),
+                  decoration: BoxDecoration(
+                    color: Theme.of(context).colorScheme.surfaceContainerHighest
+                        .withValues(alpha: 0.45),
+                    borderRadius: BorderRadius.circular(8),
+                    border: Border.all(
+                      color: Theme.of(
+                        context,
+                      ).colorScheme.outline.withValues(alpha: 0.28),
+                    ),
                   ),
-                ),
-                child: Text(
-                  _dragPlaced[i] == null
-                      ? 'Drop item for slot ${i + 1}'
-                      : 'Slot ${i + 1}: ${_dragPlaced[i]}',
-                  style: GoogleFonts.inter(fontSize: 13),
+                  child: Text(
+                    _dragPlaced[i] == null
+                        ? 'Drop item for slot ${i + 1}'
+                        : 'Slot ${i + 1}: ${_dragPlaced[i]} (tap to remove)',
+                    style: GoogleFonts.inter(fontSize: 13),
+                  ),
                 ),
               );
             },
           ),
         ],
-        TextButton(
-          onPressed: () {
-            setState(() {
-              _dragPlaced = List<String?>.filled(expectedOrder.length, null);
-            });
-            _notifyCompletion();
-          },
-          child: const Text('Reset arrangement'),
+        Row(
+          children: [
+            TextButton(
+              onPressed: () {
+                setState(() {
+                  _isDragSkipped = false;
+                  _dragPlaced = List<String?>.filled(
+                    expectedOrder.length,
+                    null,
+                  );
+                });
+                _notifyCompletion();
+              },
+              child: const Text('Reset arrangement'),
+            ),
+            const SizedBox(width: 8),
+            TextButton.icon(
+              onPressed: () {
+                setState(() {
+                  _isDragSkipped = true;
+                  _dragPlaced = List<String?>.from(expectedOrder);
+                });
+                _notifyCompletion();
+              },
+              icon: const Icon(Icons.skip_next_rounded),
+              label: const Text('Skip'),
+            ),
+          ],
         ),
       ],
     );

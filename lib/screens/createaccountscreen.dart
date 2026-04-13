@@ -39,6 +39,10 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
 
   void _createAccount() async {
     if (_formKey.currentState!.validate()) {
+      setState(() {
+        _isLoading = true;
+      });
+
       try {
         await LocalStorage.createAccount(
           firstName: _usernameController.text.trim(),
@@ -57,8 +61,8 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
           _isLoading = false;
         });
 
-        // Show success confirmation dialog
-        showDialog(
+        // Show success confirmation dialog and let user decide when to return.
+        final goBackToLogin = await showDialog<bool>(
           context: context,
           barrierDismissible: false,
           builder: (context) => Dialog(
@@ -125,8 +129,7 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
                         ),
                       ),
                       onPressed: () {
-                        Navigator.pop(context);
-                        Navigator.pop(context);
+                        Navigator.pop(context, true);
                       },
                       child: Text(
                         'Back to Login',
@@ -147,7 +150,10 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
         if (!mounted) {
           return;
         }
-        Navigator.pop(context);
+
+        if (goBackToLogin == true) {
+          Navigator.pop(context);
+        }
       } catch (e) {
         setState(() {
           _isLoading = false;
@@ -277,7 +283,9 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
                           if (value == null || value.isEmpty) {
                             return 'Email is required';
                           }
-                          if (!RegExp(r'^[a-zA-Z0-9._%-]+$').hasMatch(value)) {
+                          if (!RegExp(
+                            r'^[\w\.\-]+@([\w\-]+\.)+[\w\-]{2,4}$',
+                          ).hasMatch(value)) {
                             return 'Invalid email format';
                           }
                           return null;
