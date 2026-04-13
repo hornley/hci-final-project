@@ -684,6 +684,20 @@ class _LessonInteractionCardState extends State<_LessonInteractionCard> {
   late List<String?> _dragPlaced;
   bool _isDragSkipped = false;
 
+  Color _primaryText(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    return Theme.of(
+      context,
+    ).colorScheme.onSurface.withValues(alpha: isDark ? 0.98 : 0.9);
+  }
+
+  Color _secondaryText(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    return Theme.of(
+      context,
+    ).colorScheme.onSurface.withValues(alpha: isDark ? 0.9 : 0.78);
+  }
+
   @override
   void initState() {
     super.initState();
@@ -757,7 +771,7 @@ class _LessonInteractionCardState extends State<_LessonInteractionCard> {
           style: GoogleFonts.poppins(
             fontSize: 14,
             fontWeight: FontWeight.w700,
-            color: Theme.of(context).colorScheme.onSurface,
+            color: _primaryText(context),
           ),
         ),
         const SizedBox(height: 4),
@@ -765,9 +779,7 @@ class _LessonInteractionCardState extends State<_LessonInteractionCard> {
           widget.interaction.prompt,
           style: GoogleFonts.inter(
             fontSize: 13,
-            color: Theme.of(
-              context,
-            ).colorScheme.onSurface.withValues(alpha: 0.82),
+            color: _secondaryText(context),
           ),
         ),
       ],
@@ -785,7 +797,11 @@ class _LessonInteractionCardState extends State<_LessonInteractionCard> {
       children: [
         Text(
           '$valueLabel: ${_value.toStringAsFixed(1)}$unit',
-          style: GoogleFonts.inter(fontSize: 13),
+          style: GoogleFonts.inter(
+            fontSize: 13,
+            color: _primaryText(context),
+            fontWeight: FontWeight.w600,
+          ),
         ),
         Slider(
           value: _value,
@@ -803,9 +819,7 @@ class _LessonInteractionCardState extends State<_LessonInteractionCard> {
             '$outputLabel: ${output.toStringAsFixed(2)}',
             style: GoogleFonts.inter(
               fontSize: 12,
-              color: Theme.of(
-                context,
-              ).colorScheme.onSurface.withValues(alpha: 0.72),
+              color: _secondaryText(context),
             ),
           ),
       ],
@@ -825,7 +839,11 @@ class _LessonInteractionCardState extends State<_LessonInteractionCard> {
       children: [
         Text(
           '${widget.interaction.valueLabel ?? 'Input'}: ${_chartInput.toStringAsFixed(1)}${widget.interaction.valueUnit ?? ''}',
-          style: GoogleFonts.inter(fontSize: 13),
+          style: GoogleFonts.inter(
+            fontSize: 13,
+            color: _primaryText(context),
+            fontWeight: FontWeight.w600,
+          ),
         ),
         Slider(
           value: _chartInput,
@@ -854,9 +872,7 @@ class _LessonInteractionCardState extends State<_LessonInteractionCard> {
           '${widget.interaction.outputLabel ?? 'Output'}: ${output.toStringAsFixed(2)}',
           style: GoogleFonts.inter(
             fontSize: 12,
-            color: Theme.of(
-              context,
-            ).colorScheme.onSurface.withValues(alpha: 0.72),
+            color: _secondaryText(context),
           ),
         ),
       ],
@@ -873,7 +889,14 @@ class _LessonInteractionCardState extends State<_LessonInteractionCard> {
         SwitchListTile(
           contentPadding: EdgeInsets.zero,
           value: _toggleOn,
-          title: Text(widget.interaction.toggleLabel ?? 'Enable scenario'),
+          title: Text(
+            widget.interaction.toggleLabel ?? 'Enable scenario',
+            style: GoogleFonts.inter(
+              fontSize: 13,
+              color: _primaryText(context),
+              fontWeight: FontWeight.w600,
+            ),
+          ),
           onChanged: (enabled) {
             setState(() {
               _toggleOn = enabled;
@@ -887,7 +910,13 @@ class _LessonInteractionCardState extends State<_LessonInteractionCard> {
             contentPadding: EdgeInsets.zero,
             value: option,
             groupValue: _selectedOption,
-            title: Text(option, style: GoogleFonts.inter(fontSize: 13)),
+            title: Text(
+              option,
+              style: GoogleFonts.inter(
+                fontSize: 13,
+                color: _primaryText(context),
+              ),
+            ),
             onChanged: _toggleOn
                 ? (value) {
                     setState(() {
@@ -902,7 +931,8 @@ class _LessonInteractionCardState extends State<_LessonInteractionCard> {
             'Try again: think about the bonding rule before continuing.',
             style: GoogleFonts.inter(
               fontSize: 12,
-              color: Colors.orange.shade700,
+              color: context.appColors.warning,
+              fontWeight: FontWeight.w600,
             ),
           ),
       ],
@@ -932,11 +962,7 @@ class _LessonInteractionCardState extends State<_LessonInteractionCard> {
               childWhenDragging: Chip(
                 label: Text(
                   item,
-                  style: TextStyle(
-                    color: Theme.of(
-                      context,
-                    ).colorScheme.onSurface.withValues(alpha: 0.45),
-                  ),
+                  style: TextStyle(color: _secondaryText(context)),
                 ),
               ),
               child: Chip(label: Text(item)),
@@ -982,7 +1008,11 @@ class _LessonInteractionCardState extends State<_LessonInteractionCard> {
                     _dragPlaced[i] == null
                         ? 'Drop item for slot ${i + 1}'
                         : 'Slot ${i + 1}: ${_dragPlaced[i]} (tap to remove)',
-                    style: GoogleFonts.inter(fontSize: 13),
+                    style: GoogleFonts.inter(
+                      fontSize: 13,
+                      color: _primaryText(context),
+                      fontWeight: FontWeight.w600,
+                    ),
                   ),
                 ),
               );
@@ -1063,8 +1093,8 @@ class _LessonInteractionCardState extends State<_LessonInteractionCard> {
               interaction.revealOnComplete!,
               style: GoogleFonts.inter(
                 fontSize: 12,
-                color: Theme.of(context).colorScheme.primary,
-                fontWeight: FontWeight.w600,
+                color: context.appColors.success,
+                fontWeight: FontWeight.w700,
               ),
             ),
           ],
