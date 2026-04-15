@@ -1,22 +1,15 @@
 import 'package:flutter/material.dart';
-import 'package:hci_final_project/login_wrapper.dart';
+import 'package:hci_final_project/screens/animated_splash_gate.dart';
 import 'package:hci_final_project/theme/app_theme.dart';
-import 'package:hci_final_project/onboardingscreen.dart';
-import 'homepage.dart';
 import 'local_storage.dart';
 
-void main() async {
+void main() {
   WidgetsFlutterBinding.ensureInitialized();
-
-  bool loggedIn = await LocalStorage.isLoggedIn();
-
-  runApp(MainApp(startLoggedIn: loggedIn));
+  runApp(const MainApp());
 }
 
 class MainApp extends StatefulWidget {
-  final bool startLoggedIn;
-
-  const MainApp({super.key, required this.startLoggedIn});
+  const MainApp({super.key});
 
   @override
   State<MainApp> createState() => _MainAppState();
@@ -62,37 +55,15 @@ class _MainAppState extends State<MainApp> {
           // ✅ GLOBAL TEXT SCALING
           builder: (context, child) {
             return MediaQuery(
-              data: MediaQuery.of(context).copyWith(
-                textScaler: TextScaler.linear(_textScale),
-              ),
+              data: MediaQuery.of(
+                context,
+              ).copyWith(textScaler: TextScaler.linear(_textScale)),
               child: child!,
             );
           },
-
-          home: FutureBuilder<Map<String, bool>>(
-            future: _loadStartupState(),
-            builder: (context, snapshot) {
-              if (!snapshot.hasData) {
-                return const Scaffold(
-                  body: Center(child: CircularProgressIndicator()),
-                );
-              }
-
-              final startupState = snapshot.data!;
-              final hasSeenOnboarding =
-                  startupState['hasSeenOnboarding'] ?? false;
-              final loggedIn = startupState['loggedIn'] ?? false;
-
-              if (!hasSeenOnboarding) {
-                return const OnboardingScreen();
-              }
-
-              return loggedIn
-                  ? HomeScreen(
-                      onTextScaleChanged: _updateTextScale,
-                    )
-                  : const LoginScreen();
-            },
+          home: AnimatedSplashGate(
+            loadStartupState: _loadStartupState,
+            onTextScaleChanged: _updateTextScale,
           ),
         );
       },
@@ -103,9 +74,6 @@ class _MainAppState extends State<MainApp> {
     final seenOnboarding = await LocalStorage.hasSeenOnboarding();
     final loggedIn = await LocalStorage.isLoggedIn();
 
-    return {
-      'hasSeenOnboarding': seenOnboarding,
-      'loggedIn': loggedIn,
-    };
+    return {'hasSeenOnboarding': seenOnboarding, 'loggedIn': loggedIn};
   }
 }
