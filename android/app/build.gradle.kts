@@ -7,6 +7,18 @@ plugins {
 
 android {
     namespace = "com.example.hci_final_project"
+
+    packaging {
+        resources {
+            excludes += setOf(
+                "META-INF/*",
+                "META-INF/**",
+                "commonMain/**",
+                "nativeMain/**"
+            )
+        }
+    }
+
     compileSdk = flutter.compileSdkVersion
     ndkVersion = flutter.ndkVersion
 
@@ -54,4 +66,6 @@ configurations.all {
         force("androidx.lifecycle:lifecycle-runtime-ktx:2.7.0")
         force("androidx.datastore:datastore-core-android:1.1.7")
     }
+    
+    exclude(group = "androidx.datastore", module = "datastore-core-jvm")
 }
