@@ -20,6 +20,7 @@ class LoginScreen extends StatefulWidget {
 class _LoginScreenState extends State<LoginScreen> {
   final TextEditingController _usernameController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
+  bool _obscureLoginPassword = true;
   bool _loading = true;
   bool _isLoggingIn = false;
   String _errorMessage = '';
@@ -87,6 +88,127 @@ class _LoginScreenState extends State<LoginScreen> {
         ],
       ),
     );
+  }
+
+  Future<void> _showForgotPasswordFlow() async {
+    final emailController = TextEditingController();
+    final newPasswordController = TextEditingController();
+    final confirmPasswordController = TextEditingController();
+    var obscureNewPassword = true;
+    var obscureConfirmPassword = true;
+
+    await showDialog<void>(
+      context: context,
+      builder: (context) => StatefulBuilder(
+        builder: (context, setDialogState) => AlertDialog(
+          title: const Text('Forgot Password'),
+          content: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                TextField(
+                  controller: emailController,
+                  decoration: const InputDecoration(labelText: 'Email'),
+                  keyboardType: TextInputType.emailAddress,
+                ),
+                const SizedBox(height: 10),
+                TextField(
+                  controller: newPasswordController,
+                  decoration: InputDecoration(
+                    labelText: 'New password',
+                    suffixIcon: IconButton(
+                      icon: Icon(
+                        obscureNewPassword
+                            ? Icons.visibility_off_outlined
+                            : Icons.visibility_outlined,
+                      ),
+                      onPressed: () {
+                        setDialogState(() {
+                          obscureNewPassword = !obscureNewPassword;
+                        });
+                      },
+                    ),
+                  ),
+                  obscureText: obscureNewPassword,
+                ),
+                const SizedBox(height: 10),
+                TextField(
+                  controller: confirmPasswordController,
+                  decoration: InputDecoration(
+                    labelText: 'Confirm password',
+                    suffixIcon: IconButton(
+                      icon: Icon(
+                        obscureConfirmPassword
+                            ? Icons.visibility_off_outlined
+                            : Icons.visibility_outlined,
+                      ),
+                      onPressed: () {
+                        setDialogState(() {
+                          obscureConfirmPassword = !obscureConfirmPassword;
+                        });
+                      },
+                    ),
+                  ),
+                  obscureText: obscureConfirmPassword,
+                ),
+                const SizedBox(height: 8),
+                const Text(
+                  'If the email matches an account, password will be updated locally.',
+                  style: TextStyle(fontSize: 12),
+                ),
+              ],
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text('Cancel'),
+            ),
+            ElevatedButton(
+              onPressed: () async {
+                final email = emailController.text.trim();
+                final newPassword = newPasswordController.text.trim();
+                final confirmPassword = confirmPasswordController.text.trim();
+
+                if (email.isEmpty || newPassword.isEmpty || confirmPassword.isEmpty) {
+                  _showLoginError('Please complete all fields.');
+                  return;
+                }
+
+                if (newPassword.length < 8) {
+                  _showLoginError('New password must be at least 8 characters.');
+                  return;
+                }
+
+                if (newPassword != confirmPassword) {
+                  _showLoginError('Passwords do not match.');
+                  return;
+                }
+
+                final success = await LocalStorage.resetPasswordWithEmail(
+                  email: email,
+                  newPassword: newPassword,
+                );
+
+                if (!success) {
+                  _showLoginError('No account found for that email.');
+                  return;
+                }
+
+                if (!context.mounted) return;
+                Navigator.pop(context);
+                _showLoginError('Password updated successfully.');
+              },
+              child: const Text('Change Password'),
+            ),
+          ],
+        ),
+      ),
+    );
+
+    emailController.dispose();
+    newPasswordController.dispose();
+    confirmPasswordController.dispose();
   }
 
   void _login() async {
@@ -348,16 +470,19 @@ class _LoginScreenState extends State<LoginScreen> {
                   _buildTextField(
                     icon: Icons.lock_outline,
                     hint: "Password",
-                    obscure: true,
+                    obscure: _obscureLoginPassword,
                     controller: _passwordController,
                     enableInput: !_isLoggingIn,
+                    onToggleObscure: () {
+                      setState(() {
+                        _obscureLoginPassword = !_obscureLoginPassword;
+                      });
+                    },
                   ),
                   Align(
                     alignment: Alignment.centerRight,
                     child: TextButton(
-                      onPressed: () {
-                        print("Forgot password");
-                      },
+                      onPressed: _showForgotPasswordFlow,
                       child: Text(
                         "Forgot Password?",
                         style: GoogleFonts.inter(
@@ -473,6 +598,7 @@ class _LoginScreenState extends State<LoginScreen> {
     bool obscure = false,
     bool enableInput = true,
     TextEditingController? controller,
+    VoidCallback? onToggleObscure,
   }) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 8.0),
@@ -491,6 +617,17 @@ class _LoginScreenState extends State<LoginScreen> {
               icon,
               color: Theme.of(context).colorScheme.onSurface,
             ),
+            suffixIcon: onToggleObscure == null
+                ? null
+                : IconButton(
+                    icon: Icon(
+                      obscure
+                          ? Icons.visibility_off_outlined
+                          : Icons.visibility_outlined,
+                      color: Theme.of(context).colorScheme.onSurface,
+                    ),
+                    onPressed: onToggleObscure,
+                  ),
             hintText: hint,
             hintStyle: GoogleFonts.inter(
               fontSize: 14,

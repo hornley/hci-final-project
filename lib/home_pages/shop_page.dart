@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:hci_final_project/achievement_manager.dart';
 
 import '../data/avatar_catalog.dart';
 import '../local_storage.dart';
@@ -61,7 +62,7 @@ class _ShopPageState extends State<ShopPage> {
     }
 
     if (_coins < item.coinCost) {
-      _showMessage('Not enough coins. You need ${item.coinCost} coins.');
+      _showMessage('Not enough gold. You need ${item.coinCost} gold.');
       return;
     }
 
@@ -69,7 +70,7 @@ class _ShopPageState extends State<ShopPage> {
       context: context,
       builder: (context) => AlertDialog(
         title: Text('Unlock ${item.name}?'),
-        content: Text('This will cost ${item.coinCost} coins. Continue?'),
+        content: Text('This will cost ${item.coinCost} gold. Continue?'),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
@@ -89,11 +90,15 @@ class _ShopPageState extends State<ShopPage> {
 
     final spent = await LocalStorage.spendCoins(item.coinCost);
     if (!spent) {
-      _showMessage('Not enough coins.');
+      _showMessage('Not enough gold.');
       return;
     }
 
     await LocalStorage.unlockAvatar(index);
+    await AchievementManager().evaluateAndUnlock();
+    if (mounted) {
+      await AchievementManager().showPendingCompletionPopups(context);
+    }
     await _loadState();
     _showMessage('${item.name} unlocked.');
   }
@@ -141,7 +146,7 @@ class _ShopPageState extends State<ShopPage> {
         ),
         const SizedBox(height: 6),
         Text(
-          'Spend coins earned from quests to unlock avatars.',
+          'Spend gold earned from quests to unlock avatars.',
           style: GoogleFonts.poppins(
             fontSize: 14,
             color: Theme.of(
@@ -154,7 +159,7 @@ class _ShopPageState extends State<ShopPage> {
           children: [
             _chip('Level $_level'),
             const SizedBox(width: 8),
-            _chip('Coins $_coins'),
+            _chip('Gold $_coins'),
           ],
         ),
         if (_isGuest) ...[
@@ -209,7 +214,7 @@ class _ShopPageState extends State<ShopPage> {
     if (isUnlocked) {
       subtitle = isEquipped ? 'Equipped' : 'Unlocked';
     } else {
-      subtitle = 'Cost: ${item.coinCost} coins • Level ${item.requiredLevel}';
+      subtitle = 'Cost: ${item.coinCost} gold • Level ${item.requiredLevel}';
     }
 
     return Card(

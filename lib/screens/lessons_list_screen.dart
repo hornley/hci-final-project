@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_math_fork/flutter_math.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:hci_final_project/achievement_manager.dart';
 import 'package:hci_final_project/progress_manager.dart';
 import 'package:hci_final_project/theme/app_theme.dart';
 import '../models/lesson.dart';
@@ -128,6 +129,10 @@ class _LessonDetailBodyState extends State<LessonDetailBody> {
   Future<void> _markLessonReadIfComplete() async {
     if (_visibleSectionCount >= widget.lesson.sections.length) {
       await ProgressManager.markLessonRead(widget.lesson.title);
+      await AchievementManager().evaluateAndUnlock();
+      if (mounted) {
+        await AchievementManager().showPendingCompletionPopups(context);
+      }
       widget.onProgressUpdated?.call();
       if (!mounted) {
         return;

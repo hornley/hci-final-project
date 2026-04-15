@@ -159,7 +159,7 @@ class _QuestsPageState extends State<QuestsPage> {
                 ),
               ),
               child: Text(
-                'Admin mode reminder: quest rewards and EXP/coin gains are disabled for this account.',
+                'Admin mode reminder: quest rewards and EXP/gold gains are disabled for this account.',
                 style: GoogleFonts.poppins(
                   fontSize: 12,
                   color: Theme.of(context).colorScheme.onSurface,
@@ -228,7 +228,7 @@ class _QuestsPageState extends State<QuestsPage> {
             children: [
               _statChip('Level $_level'),
               const SizedBox(width: 8),
-              _statChip('Coins $_coins'),
+              _statChip('Gold $_coins'),
               const SizedBox(width: 8),
               _statChip('EXP $_exp'),
             ],
@@ -289,7 +289,7 @@ class _QuestsPageState extends State<QuestsPage> {
 
     final subtitle = _isAdmin
         ? '$questSubtitle\nDisabled for admin account'
-        : '$questSubtitle\nReward: +${quest.expReward} EXP, +${quest.coinReward} coins';
+        : '$questSubtitle\nReward: +${quest.expReward} EXP, +${quest.coinReward} gold';
 
     return Card(
       margin: const EdgeInsets.only(bottom: 10),

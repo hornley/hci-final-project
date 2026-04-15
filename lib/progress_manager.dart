@@ -142,6 +142,7 @@ class ProgressManager {
         'rewardedQuizQuestionIndexes': <String, dynamic>{},
         'quizStats': <String, dynamic>{},
         'recentQuizzes': <dynamic>[],
+        'quizMasterQualifiedCompletions': 0,
       };
     }
 
@@ -162,6 +163,8 @@ class ProgressManager {
       ),
       'quizStats': Map<String, dynamic>.from(decoded['quizStats'] ?? {}),
       'recentQuizzes': List<dynamic>.from(decoded['recentQuizzes'] ?? []),
+      'quizMasterQualifiedCompletions':
+          (decoded['quizMasterQualifiedCompletions'] as num?)?.toInt() ?? 0,
     };
   }
 
@@ -213,6 +216,9 @@ class ProgressManager {
     final percentage = totalQuestions == 0
         ? 0
         : ((correctAnswers / totalQuestions) * 100).round();
+    final quizMasterQualifiedCompletions =
+        ((data['quizMasterQualifiedCompletions'] as num?)?.toInt() ?? 0) +
+        (percentage >= 75 ? 1 : 0);
 
     final recent = List<dynamic>.from(data['recentQuizzes'] as List);
     recent.insert(
@@ -243,6 +249,7 @@ class ProgressManager {
       ),
       'quizStats': quizStats,
       'recentQuizzes': trimmedRecent,
+      'quizMasterQualifiedCompletions': quizMasterQualifiedCompletions,
     });
   }
 
@@ -265,6 +272,8 @@ class ProgressManager {
         ),
         'quizStats': Map<String, dynamic>.from(data['quizStats'] as Map),
         'recentQuizzes': List<dynamic>.from(data['recentQuizzes'] as List),
+        'quizMasterQualifiedCompletions':
+            (data['quizMasterQualifiedCompletions'] as num?)?.toInt() ?? 0,
       });
     }
   }
@@ -351,6 +360,8 @@ class ProgressManager {
       'rewardedQuizQuestionIndexes': perQuestionRaw,
       'quizStats': Map<String, dynamic>.from(data['quizStats'] as Map),
       'recentQuizzes': List<dynamic>.from(data['recentQuizzes'] as List),
+      'quizMasterQualifiedCompletions':
+          (data['quizMasterQualifiedCompletions'] as num?)?.toInt() ?? 0,
     });
   }
 
@@ -448,11 +459,154 @@ class ProgressManager {
       'rewardedQuizQuestionIndexes': <String, dynamic>{},
       'quizStats': <String, dynamic>{},
       'recentQuizzes': <dynamic>[],
+      'quizMasterQualifiedCompletions': 0,
     });
+  }
+
+  static Future<int> getQuizMasterQualifiedCompletions() async {
+    final data = await _loadData();
+    return (data['quizMasterQualifiedCompletions'] as num?)?.toInt() ?? 0;
   }
 
   static Future<void> resetGuestProgress() async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.remove('$_keyPrefix-$_guestUserKey');
+    await LocalStorage.clearGuestCompletedAchievements();
+  }
+
+  static Future<int> getCompletedLessonsCount() async {
+    final data = await _loadData();
+    final completedLessons = Set<String>.from(data['completedLessons'] as List);
+    return completedLessons.length;
+  }
+
+  static Future<int> getReadLessonsCount() async {
+    final data = await _loadData();
+    final readLessons = Set<String>.from(data['readLessons'] as List);
+    return readLessons.length;
+  }
+
+  static Future<int> getTotalQuizAttempts() async {
+    final data = await _loadData();
+    final quizStats = Map<String, dynamic>.from(data['quizStats'] as Map);
+    var attempts = 0;
+
+    for (final raw in quizStats.values) {
+      final stat = Map<String, dynamic>.from(raw as Map? ?? const {});
+      attempts += ((stat['attempts'] as num?)?.toInt() ?? 0);
+    }
+
+    return attempts;
+  }
+
+  static Future<bool> hasPassingQuizScore({String? lessonTitle}) async {
+    final data = await _loadData();
+    final quizStats = Map<String, dynamic>.from(data['quizStats'] as Map);
+
+    if (lessonTitle != null) {
+      final stat = Map<String, dynamic>.from(
+        quizStats[lessonTitle] as Map? ?? const {},
+      );
+      final totalQuestions = ((stat['totalQuestions'] as num?)?.toInt() ?? 0);
+      final bestCorrect = ((stat['bestCorrect'] as num?)?.toInt() ?? 0);
+      return totalQuestions > 0 && (bestCorrect * 2) >= totalQuestions;
+    }
+
+    for (final raw in quizStats.values) {
+      final stat = Map<String, dynamic>.from(raw as Map? ?? const {});
+      final totalQuestions = ((stat['totalQuestions'] as num?)?.toInt() ?? 0);
+      final bestCorrect = ((stat['bestCorrect'] as num?)?.toInt() ?? 0);
+      if (totalQuestions > 0 && (bestCorrect * 2) >= totalQuestions) {
+        return true;
+      }
+    }
+
+    return false;
+  }
+
+  static Future<int> countLessonsWithMinBestPercentage(
+    int minPercentage,
+  ) async {
+    final data = await _loadData();
+    final quizStats = Map<String, dynamic>.from(data['quizStats'] as Map);
+    var count = 0;
+
+    for (final raw in quizStats.values) {
+      final stat = Map<String, dynamic>.from(raw as Map? ?? const {});
+      final totalQuestions = ((stat['totalQuestions'] as num?)?.toInt() ?? 0);
+      final bestCorrect = ((stat['bestCorrect'] as num?)?.toInt() ?? 0);
+
+      if (totalQuestions <= 0) continue;
+      final percentage = (bestCorrect * 100) / totalQuestions;
+      if (percentage >= minPercentage) {
+        count++;
+      }
+    }
+
+    return count;
+  }
+
+  static Future<bool> hasAnyPerfectQuizScore() async {
+    final data = await _loadData();
+    final quizStats = Map<String, dynamic>.from(data['quizStats'] as Map);
+
+    for (final raw in quizStats.values) {
+      final stat = Map<String, dynamic>.from(raw as Map? ?? const {});
+      final totalQuestions = ((stat['totalQuestions'] as num?)?.toInt() ?? 0);
+      final bestCorrect = ((stat['bestCorrect'] as num?)?.toInt() ?? 0);
+
+      if (totalQuestions > 0 && bestCorrect >= totalQuestions) {
+        return true;
+      }
+    }
+
+    return false;
+  }
+
+  static Future<bool> hasLessonStreakDays(int requiredDays) async {
+    if (requiredDays <= 1) {
+      return true;
+    }
+
+    final data = await _loadData();
+    final recentRaw = List<dynamic>.from(data['recentQuizzes'] as List);
+    if (recentRaw.isEmpty) {
+      return false;
+    }
+
+    // Keep unique local dates with at least one completed lesson.
+    final uniqueDates = <DateTime>{};
+    for (final raw in recentRaw) {
+      final record = QuizCompletionRecord.fromMap(
+        Map<String, dynamic>.from(raw as Map),
+      );
+      uniqueDates.add(
+        DateTime(
+          record.completedAt.year,
+          record.completedAt.month,
+          record.completedAt.day,
+        ),
+      );
+    }
+
+    final sorted = uniqueDates.toList()..sort();
+    if (sorted.length < requiredDays) {
+      return false;
+    }
+
+    var streak = 1;
+    for (var i = 1; i < sorted.length; i++) {
+      final delta = sorted[i].difference(sorted[i - 1]).inDays;
+      if (delta == 1) {
+        streak++;
+        if (streak >= requiredDays) {
+          return true;
+        }
+      } else if (delta > 1) {
+        streak = 1;
+      }
+    }
+
+    return false;
   }
 }

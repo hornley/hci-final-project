@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:hci_final_project/achievement_manager.dart';
 import 'package:hci_final_project/theme/app_theme.dart';
 import '../models/quiz_problem.dart';
 import '../local_storage.dart';
@@ -315,6 +316,11 @@ class _QuizResultsScreenState extends State<QuizResultsScreen> {
   int _quizCoinReward = 0;
   bool _isRetakeWithoutRewards = false;
   final Set<int> _revealedAnswerIndexes = <int>{};
+  int _correctAnswers = 0;
+  int _totalQuestions = 0;
+
+  bool get _passedQuiz =>
+      _totalQuestions > 0 && (_correctAnswers * 2) >= _totalQuestions;
 
   String _normalizeAnswer(String input) {
     var value = input.trim().toLowerCase();
@@ -377,6 +383,13 @@ class _QuizResultsScreenState extends State<QuizResultsScreen> {
       totalQuestions: totalQuestions,
     );
 
+    await AchievementManager().evaluateAndUnlock(
+      recentLessonTitle: widget.lessonTitle,
+    );
+    if (mounted) {
+      await AchievementManager().showPendingCompletionPopups(context);
+    }
+
     final rewardProgress = await ProgressManager.getQuizRewardProgress(
       widget.lessonTitle,
     );
@@ -415,6 +428,8 @@ class _QuizResultsScreenState extends State<QuizResultsScreen> {
       _rewardResult = result;
       _quizExpReward = quizExpReward;
       _quizCoinReward = quizCoinReward;
+      _correctAnswers = correctAnswers;
+      _totalQuestions = totalQuestions;
       _isRetakeWithoutRewards =
           !shouldClaimBaseReward &&
           newlyRewardedIndexes.isEmpty &&
@@ -427,13 +442,13 @@ class _QuizResultsScreenState extends State<QuizResultsScreen> {
     final totalCoins = quizCoinReward + result.totalCoinReward;
 
     final quizRewardMessage =
-        'Quiz reward: +$quizExpReward EXP, +$quizCoinReward coins. '
+        'Quiz reward: +$quizExpReward EXP, +$quizCoinReward gold. '
         'Newly rewarded questions: ${newlyRewardedIndexes.length}/$totalQuestions.';
 
     final message = result.hasRewards
         ? '$quizRewardMessage '
               'Completed $questCount $questLabel. '
-              '+${result.totalExpReward} EXP, +${result.totalCoinReward} coins.'
+              '+${result.totalExpReward} EXP, +${result.totalCoinReward} gold.'
         : quizRewardMessage;
 
     final size = MediaQuery.of(context).size;
@@ -446,7 +461,7 @@ class _QuizResultsScreenState extends State<QuizResultsScreen> {
           20,
           size.height * 0.38,
         ),
-        content: Text('$message Total: +$totalExp EXP, +$totalCoins coins.'),
+        content: Text('$message Total: +$totalExp EXP, +$totalCoins gold.'),
       ),
     );
   }
@@ -483,9 +498,9 @@ class _QuizResultsScreenState extends State<QuizResultsScreen> {
                   ? 'Retake detected: no rewards granted for this lesson quiz.'
                   : _rewardResult?.hasRewards == true
                   ? 'Rewards collected: '
-                        'Quiz +$_quizExpReward EXP, +$_quizCoinReward coins • '
-                        'Quest +${_rewardResult!.totalExpReward} EXP, +${_rewardResult!.totalCoinReward} coins'
-                  : 'Quiz rewards collected: +$_quizExpReward EXP, +$_quizCoinReward coins',
+                        'Quiz +$_quizExpReward EXP, +$_quizCoinReward gold • '
+                        'Quest +${_rewardResult!.totalExpReward} EXP, +${_rewardResult!.totalCoinReward} gold'
+                  : 'Quiz rewards collected: +$_quizExpReward EXP, +$_quizCoinReward gold',
               style: TextStyle(color: Theme.of(context).colorScheme.onSurface),
             ),
           ),
@@ -567,28 +582,53 @@ class _QuizResultsScreenState extends State<QuizResultsScreen> {
           // 🔹 BUTTON (ALWAYS AT BOTTOM)
           Padding(
             padding: const EdgeInsets.all(16),
-            child: SizedBox(
-              width: double.infinity,
-              child: ElevatedButton(
-                onPressed: () {
-                  for (var i = 0; i < widget.backToLessonsPopCount; i++) {
-                    if (Navigator.canPop(context)) {
-                      Navigator.pop(context);
-                    }
-                  }
-                },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: buttonBackground,
-                  foregroundColor: buttonForeground,
-                ),
-                child: Text(
-                  "Back to Lessons",
-                  style: TextStyle(
-                    color: buttonForeground,
-                    fontWeight: FontWeight.w600,
+            child: Row(
+              children: [
+                if (!_passedQuiz) ...[
+                  Expanded(
+                    child: OutlinedButton(
+                      onPressed: () {
+                        Navigator.pushReplacement(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => QuizScreen(
+                              problems: widget.problems,
+                              lessonTitle: widget.lessonTitle,
+                              themeColor: widget.themeColor,
+                              backToLessonsPopCount:
+                                  widget.backToLessonsPopCount,
+                            ),
+                          ),
+                        );
+                      },
+                      child: const Text('Retry Quiz'),
+                    ),
+                  ),
+                  const SizedBox(width: 10),
+                ],
+                Expanded(
+                  child: ElevatedButton(
+                    onPressed: () {
+                      for (var i = 0; i < widget.backToLessonsPopCount; i++) {
+                        if (Navigator.canPop(context)) {
+                          Navigator.pop(context);
+                        }
+                      }
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: buttonBackground,
+                      foregroundColor: buttonForeground,
+                    ),
+                    child: Text(
+                      "Back to Lessons",
+                      style: TextStyle(
+                        color: buttonForeground,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
                   ),
                 ),
-              ),
+              ],
             ),
           ),
         ],

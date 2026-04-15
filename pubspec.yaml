@@ -44,6 +44,7 @@ flutter:
     - assets/avatars/
     - assets/icons/
     - assets/animations/
+    - assets/achievements/
     - assets/
 
 flutter_native_splash:

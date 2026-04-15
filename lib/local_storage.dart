@@ -11,6 +11,7 @@ class LocalStorage {
   static const _keyGuestCoins = 'guestCoins';
   static const _keyGuestLevel = 'guestLevel';
   static const _textScaleKey = 'text_scale';
+  static const _keyCompletedAchievements = 'completedAchievements';
 
   static Map<String, dynamic> _adminAccount() {
     return {
@@ -55,6 +56,13 @@ class LocalStorage {
   // Reset login state (for testing / logout)
   static Future<void> logout() async {
     final prefs = await SharedPreferences.getInstance();
+    final currentUsername = prefs.getString(_keyCurrentUsername);
+
+    // Guest sessions keep username null, so clear guest-only achievement state.
+    if (currentUsername == null) {
+      await prefs.remove(_keyCompletedAchievements);
+    }
+
     await prefs.setBool(_keyIsLoggedIn, false);
     await prefs.remove(_keyCurrentUsername);
   }
@@ -74,6 +82,7 @@ class LocalStorage {
     await prefs.remove(_keyGuestExp);
     await prefs.remove(_keyGuestCoins);
     await prefs.remove(_keyGuestLevel);
+    await prefs.remove(_keyCompletedAchievements);
     await setLoggedIn(true);
     await setCurrentUsername('admin');
   }
@@ -150,6 +159,21 @@ class LocalStorage {
     return accounts.any((acc) => acc['username'] == username);
   }
 
+  static Future<Map<String, dynamic>?> getAccountByUsername(
+    String username,
+  ) async {
+    if (username.trim().isEmpty) {
+      return null;
+    }
+    final accounts = await getAccounts();
+    for (final account in accounts) {
+      if ((account['username'] ?? '').toString() == username) {
+        return account;
+      }
+    }
+    return null;
+  }
+
   // Get all accounts (optional, for admin panel)
   static Future<List<Map<String, dynamic>>> getAccounts() async {
     final prefs = await SharedPreferences.getInstance();
@@ -166,6 +190,51 @@ class LocalStorage {
   static Future<void> clearCurrentUsername() async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.remove(_keyCurrentUsername);
+  }
+
+  static Future<Map<String, dynamic>?> getAccountByEmail(String email) async {
+    final normalizedEmail = email.trim().toLowerCase();
+    if (normalizedEmail.isEmpty) {
+      return null;
+    }
+
+    final accounts = await getAccounts();
+    for (final account in accounts) {
+      final accountEmail = (account['email'] ?? '')
+          .toString()
+          .trim()
+          .toLowerCase();
+      if (accountEmail == normalizedEmail) {
+        return account;
+      }
+    }
+    return null;
+  }
+
+  static Future<bool> resetPasswordWithEmail({
+    required String email,
+    required String newPassword,
+  }) async {
+    final account = await getAccountByEmail(email);
+    if (account == null) {
+      return false;
+    }
+
+    final username = (account['username'] ?? '').toString();
+    if (username.isEmpty) {
+      return false;
+    }
+
+    final accounts = await _getAccountsCopy();
+    for (var i = 0; i < accounts.length; i++) {
+      if ((accounts[i]['username'] ?? '').toString() == username) {
+        accounts[i]['password'] = newPassword;
+        await _saveAccounts(accounts);
+        return true;
+      }
+    }
+
+    return false;
   }
 
   static Future<String?> getCurrentUsername() async {
@@ -395,6 +464,58 @@ class LocalStorage {
     final updated = current + value;
     await setLevel(updated);
     return await getLevel();
+  }
+
+  // Achievement persistence (store list of achievement ids per account)
+  static List<String> _normalizeCompleted(dynamic raw) {
+    if (raw is List) {
+      return raw.map((e) => e.toString()).toSet().toList()..sort();
+    }
+    return <String>[];
+  }
+
+  static Future<List<String>> getCompletedAchievements() async {
+    final account = await getCurrentAccount();
+    if (account != null) {
+      return _normalizeCompleted(account['completedAchievements']);
+    }
+
+    final prefs = await SharedPreferences.getInstance();
+    return _normalizeCompleted(prefs.getStringList(_keyCompletedAchievements));
+  }
+
+  static Future<bool> isAchievementCompleted(String id) async {
+    final completed = await getCompletedAchievements();
+    return completed.contains(id);
+  }
+
+  static Future<void> markAchievementCompleted(String id) async {
+    final accounts = await _getAccountsCopy();
+    final index = await _findCurrentAccountIndex(accounts);
+
+    if (index == null) {
+      final prefs = await SharedPreferences.getInstance();
+      final list = _normalizeCompleted(
+        prefs.getStringList(_keyCompletedAchievements),
+      );
+      if (!list.contains(id)) {
+        list.add(id);
+        await prefs.setStringList(_keyCompletedAchievements, list);
+      }
+      return;
+    }
+
+    final list = _normalizeCompleted(accounts[index]['completedAchievements']);
+    if (!list.contains(id)) {
+      list.add(id);
+      accounts[index]['completedAchievements'] = list;
+      await _saveAccounts(accounts);
+    }
+  }
+
+  static Future<void> clearGuestCompletedAchievements() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.remove(_keyCompletedAchievements);
   }
 
   static List<int> _normalizeUnlocked(dynamic raw) {

@@ -15,6 +15,7 @@ import 'package:hci_final_project/home_pages/progress_page.dart';
 import 'package:hci_final_project/home_pages/settings_page.dart';
 import 'package:hci_final_project/home_pages/quests_page.dart';
 import 'package:hci_final_project/home_pages/shop_page.dart';
+import 'package:hci_final_project/home_pages/achievements_page.dart';
 import 'package:hci_final_project/home_pages/about_page.dart';
 import 'package:hci_final_project/data/avatar_catalog.dart';
 import 'package:hci_final_project/progress_manager.dart';
@@ -1324,7 +1325,9 @@ class _HomeScreenState extends State<HomeScreen> {
 
     return GestureDetector(
       onTap: () {
-        // TODO: Navigate to achievements page or show achievements dialog
+        Navigator.of(
+          context,
+        ).push(MaterialPageRoute(builder: (_) => const AchievementsPage()));
       },
       child: HoverScale(
         hoverScale: 1.02,
