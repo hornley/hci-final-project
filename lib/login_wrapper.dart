@@ -170,13 +170,17 @@ class _LoginScreenState extends State<LoginScreen> {
                 final newPassword = newPasswordController.text.trim();
                 final confirmPassword = confirmPasswordController.text.trim();
 
-                if (email.isEmpty || newPassword.isEmpty || confirmPassword.isEmpty) {
+                if (email.isEmpty ||
+                    newPassword.isEmpty ||
+                    confirmPassword.isEmpty) {
                   _showLoginError('Please complete all fields.');
                   return;
                 }
 
                 if (newPassword.length < 8) {
-                  _showLoginError('New password must be at least 8 characters.');
+                  _showLoginError(
+                    'New password must be at least 8 characters.',
+                  );
                   return;
                 }
 

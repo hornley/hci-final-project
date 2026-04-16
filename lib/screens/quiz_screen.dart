@@ -40,11 +40,22 @@ class _QuizScreenState extends State<QuizScreen> {
     final message = (hint != null && hint.isNotEmpty)
         ? hint
         : 'No hint available for this question yet.';
+    final scheme = Theme.of(context).colorScheme;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final snackBackground = isDark
+        ? scheme.surfaceContainerHighest
+        : scheme.inverseSurface;
+    final snackForeground = isDark ? scheme.onSurface : scheme.onInverseSurface;
 
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text('Hint: $message'),
+        backgroundColor: snackBackground,
+        content: Text(
+          'Hint: $message',
+          style: TextStyle(color: snackForeground),
+        ),
         behavior: SnackBarBehavior.floating,
+        margin: const EdgeInsets.fromLTRB(16, 0, 16, 16),
       ),
     );
   }
@@ -164,15 +175,9 @@ class _QuizScreenState extends State<QuizScreen> {
   Widget build(BuildContext context) {
     final problem = widget.problems[currentIndex];
     final userAnswer = answers[currentIndex];
-    final themeColor = widget.themeColor;
     final scheme = Theme.of(context).colorScheme;
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    final buttonBackground = isDark
-        ? context.appColors.action
-        : (themeColor ?? context.appColors.action);
-    final buttonForeground = buttonBackground.computeLuminance() > 0.6
-        ? Colors.black87
-        : Colors.white;
+    const buttonBackground = Color(0xFF4C78B2);
+    const buttonForeground = Colors.white;
 
     Widget questionWidget;
 
@@ -350,8 +355,51 @@ class _QuizResultsScreenState extends State<QuizResultsScreen> {
     return value;
   }
 
-  bool _answersMatch(String userAnswer, String expectedAnswer) {
-    return _normalizeAnswer(userAnswer) == _normalizeAnswer(expectedAnswer);
+  bool _matchesTypingPermutation(String userAnswer, String expectedAnswer) {
+    if (!expectedAnswer.contains(',')) {
+      return false;
+    }
+
+    List<String> normalizedTokens(String value) {
+      return value
+          .split(',')
+          .map((part) => _normalizeAnswer(part))
+          .where((part) => part.isNotEmpty)
+          .toList();
+    }
+
+    final userTokens = normalizedTokens(userAnswer);
+    final expectedTokens = normalizedTokens(expectedAnswer);
+
+    if (userTokens.isEmpty || userTokens.length != expectedTokens.length) {
+      return false;
+    }
+
+    userTokens.sort();
+    expectedTokens.sort();
+
+    for (var i = 0; i < userTokens.length; i++) {
+      if (userTokens[i] != expectedTokens[i]) {
+        return false;
+      }
+    }
+    return true;
+  }
+
+  bool _answersMatch(
+    String userAnswer,
+    String expectedAnswer, {
+    bool allowTypingPermutation = false,
+  }) {
+    if (_normalizeAnswer(userAnswer) == _normalizeAnswer(expectedAnswer)) {
+      return true;
+    }
+
+    if (allowTypingPermutation) {
+      return _matchesTypingPermutation(userAnswer, expectedAnswer);
+    }
+
+    return false;
   }
 
   @override
@@ -370,7 +418,12 @@ class _QuizResultsScreenState extends State<QuizResultsScreen> {
       if (index < 0 || index >= widget.problems.length) {
         return false;
       }
-      final matches = _answersMatch(answer, widget.problems[index].answer);
+      final problem = widget.problems[index];
+      final matches = _answersMatch(
+        answer,
+        problem.answer,
+        allowTypingPermutation: problem.type == QuestionType.typing,
+      );
       if (matches) {
         correctQuestionIndexes.add(index);
       }
@@ -452,16 +505,21 @@ class _QuizResultsScreenState extends State<QuizResultsScreen> {
         : quizRewardMessage;
 
     final size = MediaQuery.of(context).size;
+    final scheme = Theme.of(context).colorScheme;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final snackBackground = isDark
+        ? scheme.surfaceContainerHighest
+        : scheme.inverseSurface;
+    final snackForeground = isDark ? scheme.onSurface : scheme.onInverseSurface;
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
+        backgroundColor: snackBackground,
         behavior: SnackBarBehavior.floating,
-        margin: EdgeInsets.fromLTRB(
-          20,
-          size.height * 0.38,
-          20,
-          size.height * 0.38,
+        margin: EdgeInsets.fromLTRB(16, 0, 16, size.height < 700 ? 12 : 16),
+        content: Text(
+          '$message Total: +$totalExp EXP, +$totalCoins gold.',
+          style: TextStyle(color: snackForeground),
         ),
-        content: Text('$message Total: +$totalExp EXP, +$totalCoins gold.'),
       ),
     );
   }
@@ -513,7 +571,11 @@ class _QuizResultsScreenState extends State<QuizResultsScreen> {
               itemBuilder: (context, index) {
                 final problem = widget.problems[index];
                 final userAnswer = widget.answers[index] ?? "No answer";
-                final correct = _answersMatch(userAnswer, problem.answer);
+                final correct = _answersMatch(
+                  userAnswer,
+                  problem.answer,
+                  allowTypingPermutation: problem.type == QuestionType.typing,
+                );
                 final showAnswer = _revealedAnswerIndexes.contains(index);
 
                 return Card(

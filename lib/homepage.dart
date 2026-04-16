@@ -835,7 +835,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         child: Column(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            Image.asset("logo.png", height: 60),
+                            Image.asset("assets/logo.png", height: 60),
                             const SizedBox(height: 12),
                             Text(
                               "DASHBOARD",
@@ -903,45 +903,47 @@ class _HomeScreenState extends State<HomeScreen> {
           body: Column(
             children: [
               // Custom Header with Burger, Dashboard, and Dark Mode
-              Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 16,
-                  vertical: 12,
-                ),
-                color:
-                    Theme.of(
-                      context,
-                    ).bottomNavigationBarTheme.backgroundColor ??
-                    Theme.of(context).colorScheme.primary,
-                child: Row(
-                  children: [
-                    Builder(
-                      builder: (context) => IconButton(
-                        icon: Icon(
-                          Icons.menu,
-                          color: Theme.of(context).colorScheme.onPrimary,
+              SafeArea(
+                bottom: false,
+                child: Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 12,
+                  ),
+                  color:
+                      Theme.of(
+                        context,
+                      ).bottomNavigationBarTheme.backgroundColor ??
+                      Theme.of(context).colorScheme.primary,
+                  child: Row(
+                    children: [
+                      Builder(
+                        builder: (context) => IconButton(
+                          icon: Icon(
+                            Icons.menu,
+                            color: Theme.of(context).colorScheme.onPrimary,
+                          ),
+                          onPressed: () => Scaffold.of(context).openDrawer(),
                         ),
-                        onPressed: () => Scaffold.of(context).openDrawer(),
                       ),
-                    ),
-                    Expanded(
-                      child: Padding(
-                        padding: const EdgeInsets.only(left: 16),
+                      Expanded(
                         child: Text(
                           _getAppBarTitle(),
                           textAlign: TextAlign.center,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
                           style: GoogleFonts.poppins(
-                            fontSize: 25,
+                            fontSize: 22,
                             fontWeight: FontWeight.bold,
                             color: Theme.of(context).colorScheme.onPrimary,
                           ),
                         ),
                       ),
-                    ),
-                    const SizedBox(width: 12),
-                    const ThemeToggleButton(),
-                    const SizedBox(width: 8),
-                  ],
+                      const SizedBox(width: 12),
+                      const ThemeToggleButton(),
+                      const SizedBox(width: 8),
+                    ],
+                  ),
                 ),
               ),
               // Content

@@ -22,8 +22,12 @@ class MyBottomNavBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.all(16.0),
+    final width = MediaQuery.of(context).size.width;
+    final isCompact = width < 390;
+
+    return SafeArea(
+      top: false,
+      minimum: const EdgeInsets.fromLTRB(12, 0, 12, 10),
       child: Container(
         decoration: BoxDecoration(
           color: Theme.of(context).colorScheme.primary,
@@ -37,9 +41,13 @@ class MyBottomNavBar extends StatelessWidget {
           ],
         ),
         child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 8),
+          padding: EdgeInsets.symmetric(
+            horizontal: isCompact ? 4 : 8,
+            vertical: isCompact ? 6 : 8,
+          ),
           child: GNav(
-            gap: 6,
+            gap: isCompact ? 2 : 6,
+            iconSize: isCompact ? 20 : 24,
             activeColor: Theme.of(context).colorScheme.onPrimary,
             color: Theme.of(
               context,
@@ -47,36 +55,39 @@ class MyBottomNavBar extends StatelessWidget {
             tabBackgroundColor: Theme.of(
               context,
             ).colorScheme.onPrimary.withValues(alpha: 0.28),
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            padding: EdgeInsets.symmetric(
+              horizontal: isCompact ? 10 : 16,
+              vertical: isCompact ? 10 : 12,
+            ),
             tabs: [
               GButton(
                 key: _navItemKey(0),
                 icon: Icons.home_rounded,
-                text: 'Home',
+                text: isCompact ? '' : 'Home',
                 onPressed: () => onTabChange(0),
               ),
               GButton(
                 key: _navItemKey(1),
                 icon: Icons.show_chart_rounded,
-                text: 'Progress',
+                text: isCompact ? '' : 'Progress',
                 onPressed: () => onTabChange(1),
               ),
               GButton(
                 key: _navItemKey(2),
                 icon: Icons.menu_book_rounded,
-                text: 'Subjects',
+                text: isCompact ? '' : 'Subjects',
                 onPressed: () => onTabChange(2),
               ),
               GButton(
                 key: _navItemKey(3),
                 icon: Icons.task_alt_rounded,
-                text: 'Quests',
+                text: isCompact ? '' : 'Quests',
                 onPressed: () => onTabChange(3),
               ),
               GButton(
                 key: _navItemKey(4),
                 icon: Icons.person_rounded,
-                text: 'Profile',
+                text: isCompact ? '' : 'Profile',
                 onPressed: () => onTabChange(4),
               ),
             ],

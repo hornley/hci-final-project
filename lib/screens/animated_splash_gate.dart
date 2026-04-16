@@ -138,7 +138,15 @@ class _AnimatedSplashGateState extends State<AnimatedSplashGate>
                           scale: pulse,
                           child: Padding(
                             padding: const EdgeInsets.all(20),
-                            child: Image.asset('assets/splash.png'),
+                            child: Image.asset(
+                              'assets/splash.png',
+                              errorBuilder: (context, error, stackTrace) =>
+                                  const Icon(
+                                    Icons.calculate_rounded,
+                                    size: 72,
+                                    color: Color(0xFF395886),
+                                  ),
+                            ),
                           ),
                         ),
                       ),
