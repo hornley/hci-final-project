@@ -325,24 +325,48 @@ class _LessonDetailBodyState extends State<LessonDetailBody> {
                                     if (hasPerfectScore) {
                                       final shouldRetake = await showDialog<bool>(
                                         context: context,
-                                        builder: (context) => AlertDialog(
-                                          title: const Text('Retake quiz?'),
-                                          content: const Text(
-                                            'You already completed this quiz with 100%. Do you still want to retake it?',
-                                          ),
-                                          actions: [
-                                            TextButton(
-                                              onPressed: () =>
-                                                  Navigator.pop(context, false),
-                                              child: const Text('Cancel'),
+                                        builder: (context) {
+                                          final scheme = Theme.of(
+                                            context,
+                                          ).colorScheme;
+                                          final isDark =
+                                              Theme.of(context).brightness ==
+                                              Brightness.dark;
+                                          final dialogTextColor = isDark
+                                              ? Colors.white
+                                              : scheme.onSurface;
+
+                                          return AlertDialog(
+                                            title: Text(
+                                              'Retake quiz?',
+                                              style: TextStyle(
+                                                color: dialogTextColor,
+                                              ),
                                             ),
-                                            ElevatedButton(
-                                              onPressed: () =>
-                                                  Navigator.pop(context, true),
-                                              child: const Text('Retake'),
+                                            content: Text(
+                                              'You already completed this quiz with 100%. Do you still want to retake it?',
+                                              style: TextStyle(
+                                                color: dialogTextColor,
+                                              ),
                                             ),
-                                          ],
-                                        ),
+                                            actions: [
+                                              TextButton(
+                                                onPressed: () => Navigator.pop(
+                                                  context,
+                                                  false,
+                                                ),
+                                                child: const Text('Cancel'),
+                                              ),
+                                              ElevatedButton(
+                                                onPressed: () => Navigator.pop(
+                                                  context,
+                                                  true,
+                                                ),
+                                                child: const Text('Retake'),
+                                              ),
+                                            ],
+                                          );
+                                        },
                                       );
 
                                       if (shouldRetake != true || !mounted) {

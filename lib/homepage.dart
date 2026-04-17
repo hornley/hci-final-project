@@ -263,21 +263,30 @@ class _HomeScreenState extends State<HomeScreen> {
   Future<void> _confirmLogout() async {
     final shouldLogout = await showDialog<bool>(
       context: context,
-      builder: (context) => AlertDialog(
-        title: const Text("Log out"),
-        content: const Text("Are you sure you want to log out?"),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context, false),
-            child: const Text("Cancel"),
+      builder: (context) {
+        final scheme = Theme.of(context).colorScheme;
+        final isDark = Theme.of(context).brightness == Brightness.dark;
+        final dialogTextColor = isDark ? Colors.white : scheme.onSurface;
+
+        return AlertDialog(
+          title: Text("Log out", style: TextStyle(color: dialogTextColor)),
+          content: Text(
+            "Are you sure you want to log out?",
+            style: TextStyle(color: dialogTextColor),
           ),
-          ElevatedButton(
-            onPressed: () => Navigator.pop(context, true),
-            style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
-            child: const Text("Log out"),
-          ),
-        ],
-      ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context, false),
+              child: const Text("Cancel"),
+            ),
+            ElevatedButton(
+              onPressed: () => Navigator.pop(context, true),
+              style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+              child: const Text("Log out"),
+            ),
+          ],
+        );
+      },
     );
 
     if (shouldLogout != true) {
